@@ -1,4 +1,4 @@
-#  Copyright (C) 2002 Bernard Boulerice
+#  Copyright (C) 2002-2003 Bernard Boulerice
 #  Sweave utilities for Mixture of Curves
 #  This file is not loaded with the library moc, it has to be sourced separately.
 #  For examples of use of these function see the file moc.Rnw
@@ -17,7 +17,7 @@ TeXCoefTable.moc<-function(object,digits=NULL,headers=TRUE,spacing="\\hspace{24p
     mle <- cbind(object$coef, se<-sqrt(diag(object$cov)) , w <- (object$coef/se)^2, (1 - pchisq(w, 1)))
     nl<-object$npar[1];ns<-object$npar[2];nx<-object$npar[3];nm<-object$npar[4]
 
-    if(headers) cat("Parameters & Estimates & Standard Error & Wald & $P[\\chi^2 > \\textrm{Wald}]$ \\\\ \n \\hline \n")
+    if(headers) cat("Parameters & Estimates & Standard Error & Wald & $P[\\chi_1^2 > \\textrm{Wald}]$ \\\\ \n \\hline \n")
 
    
     if(nl >0){
@@ -68,7 +68,7 @@ TeXFitTable.moc<-function(...,lbl=NULL,digits=NULL,headers=TRUE)
     fit<-as.matrix(cbind(AIC(...,k=0)[,1],AIC(...,k="BIC")))
     nmoc<-dim(fit)[1]
     if(is.null(lbl)) lbl<-paste(1:nmoc)
-    if(headers) cat("Model & $-2 \\log(\\textrm{Likelihood})$ & BIC & Entropy & ICL-BIC & DF  \\\\ \n ")
+    if(headers) cat("Model & $-2 \\log(\\textrm{Likelihood})$ & BIC & Entropy & ICL-BIC & Df  \\\\ \n ")
     cat("\\hline\n")
     cat(paste(apply(cbind(lbl,formatC(fit,digits=digits)),1,paste,collapse=" & "),collapse=" \\\\ \n")," \\\\ \n")
     invisible(fit)
@@ -85,7 +85,7 @@ TeXMixPTable.moc<-function(object,lbl=NULL,digits=NULL,headers=TRUE)
   {
     np<-cumsum(object$npar)
     if(!is.null(lbl) & headers) cat(" & ")
-    if(headers) cat(paste("Group",1:object$groups,collapse=" & "),"\\\\ \n \\hline \n")
+    if(headers) cat(paste("Group",1:object$groups,collapse=" & "),"\\\\ \n ")
     prob<-apply(object$gmixture(object$coef[(np[3]+1):np[4]]), 2, mean)
     if(!is.null(lbl)) cat(lbl," & ")
     cat(paste(format(prob,digits=digits),collapse=" & "),"\\\\ \n")
@@ -101,12 +101,12 @@ TeXMixPTable.moc<-function(object,lbl=NULL,digits=NULL,headers=TRUE)
 
 TeXMeanTable.moc<-function(object,digits=NULL,headers=TRUE,spacing="\\hspace{24pt}")
   {
-    if(headers) cat("Mean fitted values \\\\  \n")
+    if(headers) cat("Fitted \\\\  \n")
     cat(" & ",paste(dimnames(object$fitted.mean)[[2]],collapse=" & "),"\\\\ \n")
-    cat(paste("\\hspace{16pt}",apply(cbind(dimnames(object$fitted.mean)[[1]],formatC(object$fitted.mean,digits=digits))
+    cat(paste(spacing,apply(cbind(dimnames(object$fitted.mean)[[1]],formatC(object$fitted.mean,digits=digits))
                     ,1,paste,collapse=" & "),collapse=" \\\\ \n")," \\\\ \n")
     cat("\\hline \n")
-    if(headers) cat("Mean Observed values \\\\  \n")
+    if(headers) cat("Observed \\\\  \n")
     cat(" & ",paste(dimnames(object$observed.mean)[[2]],collapse=" & "),"\\\\ \n")
     cat(paste(spacing,apply(cbind(dimnames(object$observed.mean)[[1]]
                     ,formatC(object$observed.mean,digits=digits)),1,paste,collapse=" & "),collapse=" \\\\ \n")," \\\\ \n")

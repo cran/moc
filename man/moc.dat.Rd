@@ -15,7 +15,7 @@
   (variables) :
   \describe{
     \item{Y1, Y2, Y3, Y4}{simulated observation at 4 occasions.}
-    \item{X1}{a covariate taking 2 values.}
+    \item{X1}{a dichotomous covariate.}
   }
 }
 

@@ -2,16 +2,16 @@
 \alias{AIC.moc}
 \alias{logLik.moc}
 
-\title{Information Criterion for Mixture of Curves models.}
+\title{Information Criterion for MOC models.}
 
 \description{
 
-  \code{AIC.moc} generates a table of \eqn{\log likelihood}, AIC, BIC ,
+  \code{AIC.moc} generates a table of \eqn{\log-Likelihood}, AIC, BIC ,
   ICL-BIC and entropy values along with the degrees of freedom of multiple \code{moc}
   objects. 
 
   \code{logLik} returns on object of class logLik containing the
-  \eqn{\log likelihood},degrees of freedom and number of observations.
+  \eqn{\log-Likelihood},degrees of freedom and number of observations.
 
 }
 
@@ -30,12 +30,14 @@
 }
 
 \details{
-  The computed value is \eqn{-2 \log Like + k * npar}.
-  Specific treatment is carried for BIC (\eqn{k = \log(nsubject*nvariables)}), AIC
-  (\eqn{k = 2}) and log likelihood (\eqn{k = 0}).
-  Setting k = "BIC", will produce a table with BIC ,
-  \eqn{entropy = \sum( post * \log(post) )} which is an indicator of
-  mixture separation, df and \eqn{ICL-BIC = BIC + 2 * entropy} which is
+  The computed value is \eqn{-2\cdot \log(Likelihood) + k\cdot npar}{-2*\log-Likelihood + k*npar}.
+  Specific treatment is carried for BIC
+  (\eqn{k=\log(nsubject\cdot nvar)}{k = \log(nsubject*nvar)}),
+  AIC (\eqn{k = 2}) and log-Likelihood (\eqn{k = 0}).
+  Setting k = "BIC", will produce a table with BIC,
+  \eqn{entropy = \sum( wt\cdot post \log(post) )}{entropy = \sum( wt * post * \log(post) )}
+  which is an indicator of mixture separation, df and
+  \eqn{ICL-BIC = BIC + 2\cdot entropy}{ICL-BIC = BIC + 2 * entropy} which is
   an entropy corrected BIC, see McLachlan, G. and Peel, D. (2000).
 }
 

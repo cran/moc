@@ -1,31 +1,30 @@
 \name{residuals.moc}
 \alias{residuals.moc}
-\alias{plot.residuals.moc}
 \alias{post.moc}
+\alias{post}
 
-\title{Residuals methods for Mixture of Curves models.}
+\title{Posterior and residuals methods for MOC models.}
 
 \description{
    
-  \code{residuals.moc} computes response or deviance residuals.
-  The residuals are optionally weighted by the posterior mixture probabilities,
-  globally ( with \emph{post} ) or within each group ( in that case
-  \emph{post} is divided by its mean for each group ).
-
-  \code{plot.residuals.moc} nicely plots and object of type
-  \code{residuals.moc}.
+   \code{post} is a generic method for computing posterior probabilities of a fitted model.
   
-  \code{post.moc} computes the posterior mixture probabilities of each subject.
+   \code{post.moc} computes the posterior mixture probabilities of each subject.
+
+   \code{residuals.moc} computes response or deviance residuals.
+   The residuals are optionally weighted by the posterior mixture probabilities,
+   globally ( with \emph{post} ) or within each group ( in that case
+   \emph{post} is divided by its mean for each group ).
 
 }
 
 \usage{
 
-       \method{residuals}{moc}(object,\dots,type="deviance",post.weight=TRUE,within=FALSE)
+   post(object,\dots)
+   
+   \method{post}{moc}(object,\dots)
 
-       \method{plot}{residuals.moc}(x,against="Index",sunflower=FALSE,\dots)
-
-       \method{post}{moc}(object,\dots)
+   \method{residuals}{moc}(object,\dots,type="deviance",post.weight=TRUE,within=FALSE)
 
 }
 
@@ -37,25 +36,13 @@
   response.}
   
   \item{post.weight}{ Specify if the residuals must be weighted by the
-  posterior mixture probabilities. Weighthing is preferable, it is the
+  posterior mixture probabilities. Weighting is preferable, it is the
   default.}
 
   \item{within}{ Specify if the posterior weights are rescaled within each
-  mixture group. }
-
-  \item{x}{An object of class \code{residuals.moc}.}
-
-  \item{against}{A variable against which to plot the residuals or
-    the strings
-    \describe{
-    \item{Index:}{ The default, use the index of the residuals array.}
-    \item{Observation:}{Use the column (variable) index of the response matrix.}
-    \item{Subject:}{Use the row (subject) index of the response matrix.}
-  }}
-
-  \item{sunflower,\dots}{Specify if a sunflower or standard plot is requested.
-  Other arguments to be passed to \code{plot}.}
+    mixture group.}
   
+  \item{\dots}{Unused.}
 }
 
 \details{
@@ -64,12 +51,12 @@
 
   Deviance residuals are defined as properly scaled
   difference in the log likelihood at the observed and fitted value.
-  \deqn{deviance = \sqrt(2 * wt * (\log(density(y,y,shape,extra)/density(y,mu,shape,extra)))) * sign(response)}
+  \deqn{deviance = \sqrt{2 * wt * \log{\frac{\rm{density}(y,y,shape,extra)}{\rm{density}(y,mu,shape,extra)}}} * sign(response)}{deviance = \sqrt(2 * wt * (\log(density(y,y,shape,extra)/density(y,mu,shape,extra)))) * sign(response)}
 
-  Globally weighted residuals are preferable to detect influencial
+  Globally weighted residuals are preferable to detect influential
   data, wrong number of groups and differences between groups.
-  Rescaled weigth residuals are more useful when plotted against some
-  variables or time to detect misspecified regression function or curve.
+  Rescaled weight residuals are more useful when plotted against some
+  variables or time to detect misspecified regression function or profiles.
 }  
 
 \value{ \code{residuals.moc} returns an array of class
@@ -89,7 +76,9 @@
    
 \author{Bernard Boulerice <\email{Bernard.Boulerice@umontreal.ca}>}
 
-\seealso{\code{\link{moc}}}
+\seealso{\code{\link{moc}},\code{\link{plot.moc}},\code{\link{print.moc}},
+  \code{\link{AIC.moc}}}
+
 
 \keyword{methods}
 \keyword{utilities}

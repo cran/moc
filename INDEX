@@ -1,7 +1,8 @@
-AIC.moc                 Information Criterion for Mixture of Curves
-                        models.
-moc                     Fit a General Nonlinear Mixture of Curves.
+AIC.moc                 Information Criterion for MOC models.
+moc                     Fit a General Nonlinear Multivariate Mixture
+                        Model.
 moc.dat                 Example data for MOC.
-post                    Generic function post.
-print.moc               Fitted Mixture of Curves model
-residuals.moc           Residuals methods for Mixture of Curves models.
+plot.moc                Plotting methods for MOC models.
+print.moc               Fitted MOC model
+residuals.moc           Posterior and residuals methods for MOC models.
+utils.moc               MOC utility functions

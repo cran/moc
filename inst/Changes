@@ -1,0 +1,60 @@
+Changes in MOC 0.8
+======================
+
+
+Bugs Fixes:
+-----------
+
+Printing of moc objects without pgmu parameters is now working
+properly.
+
+The expected function was not assigned internally when returnig
+a matrix.
+
+Entropy now works with 0 posterior probabilities.
+
+The observed posterior means were not computed correctly when there
+was missing values in the response variable. The values were divided
+by the total weighted posterior propabilities instead of the total
+over non-missing responses. This is fixed in the moc object and in
+the method obsfit.moc.
+
+There where some problems when plotting the residuals with a big
+number of groups, there is a new option to resolve this (see New
+Features).
+
+
+New Features:
+-------------
+
+The functions gmu,gshape,gextra,expected are now list of functions:
+one for each group. It should make coding of groups definition easier.
+It uses less memory, so you can run larger models.
+
+There are new options:
+
+   - the option check.length allows to bypass the dimension check of
+   the returned value of the functions in gextra. This allows using
+   densities with more parameters.
+   - plot.moc now has the option scale which tells to plot the scaled
+   variables, prob.legend ta add a mixture probablity legend and
+   group.colors to specify the group colors.
+   - plot.residuals.moc has the option groups to specify for which
+   mixture groups the plot is requested.
+
+Entropy is now weighted.
+
+There are some new functions:
+
+   - profilesplot.moc that nicely plot subject profiles with a mix of
+   colors.
+   - mix.colors.moc computes subjects color by mixing group colors
+   according to posterior probabilities. This function is in the file
+   Utils.moc.R which is sourced when we load the library. This file
+   also contain the functions glogit and inv.glogit.
+
+The file combine.moc.R contains some utility functions to combine moc
+models and must be sourced by the user to be available.
+
+
+
