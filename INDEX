@@ -1,4 +1,7 @@
-hyp                     Example data for MOC.
-moc                     General Nonlinear Mixture of Curves.
+AIC.moc                 Information Criterion for Mixture of Curves
+                        models.
+moc                     Fit a General Nonlinear Mixture of Curves.
+moc.dat                 Example data for MOC.
 post                    Generic function post.
-residuals.moc           Methods for Mixture of Curves models.
+print.moc               Fitted Mixture of Curves model
+residuals.moc           Residuals methods for Mixture of Curves models.

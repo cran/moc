@@ -1,51 +1,34 @@
 \name{moc}
 \alias{moc}
-\title{General Nonlinear Mixture of Curves.}
+\title{Fit a General Nonlinear Mixture of Curves.}
 
 \description{
-  \code{moc} fits user-specified mixture of curves models to one,two
-  and three parameters distributions. The likelihood for the
-  vector of observations or repeated measurements for
-  subject \eqn{i} has the form
+    \code{moc} fits user-specified mixture of curves models to one,two
+    and three parameters distributions. The likelihood for the
+    vector of observations or repeated measurements for
+    subject \eqn{i} has the form
 
-  \deqn{f( Y_i = y_i | Z_i = z_i, W_i = w_i)  = \sum_k P( C_i = k | z_i)
+    \deqn{f( Y_i = y_i | Z_i = z_i, W_i = w_i)  = \sum_k P( C_i = k | z_i)
     h( y_i | C_i = k, w_i)}{f( Y[i] = y[i] | z[i], w[i]) =
     \Sum_k P( C[i] = k | z[i]) h( y[i] | C[i] = k, w[i])}
 
  
-  The \eqn{C_i}{C[i]} represent the mixture groups and \eqn{h()}
-  the conditional joint density of the observations \eqn{Y_i}{Y[i]}
-  given the covariates.
-  The user supplies either the joint or marginal conditional
-  density(ies) of the components of \eqn{Y_i}{Y[i]}. In the latter case,
-  the joint conditional density is constructed by taking the product of
-  the marginal densities ( assuming conditional independence).
-  Censoring should be  handled by the supplied density. 
-  The user can also define the mixture probability function.
-
-  The procedure minimizes the resulting \eqn{-\log likelihood} without
-  constraints, the parameters are all assumed to be real numbers.
-  Thus the user should supply appropriate link functions and parameterize
-  the density accordingly ( see the examples ).
-
-  The printed output includes  \eqn{-2 \log likelihood},
-  the corresponding df, AIC and BIC, mean mixture probabilities,
-  mean expected and observed values for each mixture group,
-  the maximum likelihood estimates and standard errors.
-
-  The deviance residuals, fitted values and posterior probabilities
-  are obtained through the use of the methods \code{residuals},\code{fitted}
-  and \code{post}. The user has the option of weighting the residuals
-  according to the posterior mixture probabilities.
-}
+    The \eqn{C_i}{C[i]} represent the mixture groups and \eqn{h()}
+    the conditional joint density of the observations \eqn{Y_i}{Y[i]}
+    given the covariates. The user supplies either the joint or marginal conditional
+    density(ies) of the components of \eqn{Y_i}{Y[i]}. In the latter case,
+    the joint conditional density is constructed by taking the product of
+    the marginal densities ( assuming conditional independence ).
+  }
+  
 \usage{
 
 moc(y, density=NULL, joint=FALSE, groups=1,
-gmu=NULL, gshape=NULL, gextra=NULL, gmixture=glogit, expected = NULL,
-pgmu=NULL, pgshape=NULL, pgextra=NULL, pgmix=NULL, wt=1,
-ndigit=10, gradtol=0.0001, steptol=gradtol,iterlim=100,print.level=2,...)
-
+gmu=NULL, gshape=NULL, gextra=NULL, gmixture=inv.glogit, expected = NULL,
+pgmu=NULL, pgshape=NULL, pgextra=NULL, pgmix=NULL, scale.weight=FALSE, wt=1, data=NULL,
+ndigit=10, gradtol=0.0001, steptol=gradtol,iterlim=100,print.level=2,\dots)
 }
+
 \arguments{
   \item{y}{ A matrix or data frame giving the vectors of observations
     (of length \eqn{times}) for each subject.}
@@ -58,59 +41,95 @@ ndigit=10, gradtol=0.0001, steptol=gradtol,iterlim=100,print.level=2,...)
 
   \item{groups}{ Number of mixtures.}
 
-  \item{gmu}{ A user-specified function of `pgmu', giving the regression 
-  equation of the location parameter for each observation and mixture groups.
-  The function should return a vector of length \eqn{times*groups} when
-  the locations are the same across individuals or a matrix of
-  n such vectors. It gives the location of the whole vector of observations
-  for the first group, then for the second group up to the last group.}
+  \item{gmu, gshape, gextra}{ User-specified functions of \emph{pgmu},
+  \emph{pgshape}, \emph{pgextra} respectively  giving the regression 
+  equation of the location, shape and extra density parameter for each
+  observation and mixture groups.}
 
-  \item{gshape}{ A user-specified function of `pgshape', giving the regression
-  equation of the dispersion or shape parameter for each 
-  observation and mixture groups. The function should return a vector of 
-  length times*groups or a matrix of n such vectors. 
-  This function is usually parametrized such that the parameters 
-  are the log of the dispersion.}
-
-  \item{gextra}{ A user-specified function of `pgextra', giving the regression
-  equation of the extra parameter for each observation and mixture groups.
-  The function should return a vector of length times*groups or a matrix of n such vectors.}
-
-  \item{gmixture}{ A user-specified function `pgmix', giving the regression 
-  function of the mixture probabilities. The function should return 
-  a vector of length groups or a matrix of n such vectors. 
-  The default is the the inverse generalized logit with respect to the
-  first group.}
+  \item{gmixture}{ A user-specified function \emph{pgmix}, giving the regression 
+    function of the mixture probabilities. The default is the the
+    inverse generalized logit with respect to the first group.}
 
   \item{expected}{ A function returning the expected response value with
-    respect to the parameters. This function will be used to compute the
-    fitted values and response residuals (not deviance). By default, `gmu' will
-    be taken. It is especially useful for cases where the expected value
-    differs from the location parameter as for censored
-    normal or zero inflated poisson distributions. }
+    respect to the parameters.  Defaults to \code{gmu}.}
 
-  \item{pgmu}{ Vector of initial estimates for parameters of the location function.}
+  \item{pgmu, pgshape, pgextra, pgmix}{ Vector of initial estimates for
+    parameters of the location, shape, extra and mixture functions.}
 
-  \item{pgshape}{ Vector of initial estimates for parameters of the shape function.}
 
-  \item{pgextra}{ Vector of initial estimates for parameters of the extra function.}
+  \item{wt}{ Subject vector of sampling weights. Actually the program uses
+  standard sample-weighted log-likelihood assuming fixed weights. }
 
-  \item{pgmix}{ Vector of initial estimates for parameters of the mixture function.}
+  \item{scale.weight}{ Logical value specifying if the vector of weights 
+    \emph{wt} should be rescaled to sum to the sample size.}
 
-  \item{wt}{ Subject weight vector.}
-
-   \item{ndigit,gradtol,steptol,iterlim,print.level,...}{ Arguments controlling `nlm'.}
+  \item{data}{ An optional \emph{data frame} or \emph{list} containing
+    some or all the variables.}
+  
+   \item{ndigit, gradtol, steptol, iterlim, print.level, \dots}{ Arguments controlling \code{nlm}.}
 }
 
-\note{ setting the \code{attributes} \emph{parameters} for functions
-  \code{gmu},\code{gshape},\code{gextra} and \code{gmixture} will
-  generate parameter labels in the printout of the object.}   
+\details{
+    The procedure minimizes the resulting \eqn{-\log likelihood} without
+    constraints, the parameters are all assumed to be real numbers.
+    Thus the user should supply appropriate link functions and parameterize
+    the density and parameters functions accordingly ( see the examples ).
+
+    The functions \code{gmu}, \code{gshape}, \code{gextra} returns the
+    location, shape and extra parameters to the density for each
+    observation and mixture group as a function of \emph{pgmu},
+    \emph{pgshape} and \emph{pgextra} and covariates.
+    These functions should return a vector of length \eqn{times*groups}
+    ( first group first, then for the second group up to the last group )
+    or a matrix of such vectors, one vector for each subject in the
+    response matrix when they vary accross subjects ( see the examples ).
+
+    Setting the \code{attributes} \emph{parameters} for functions
+    \code{gmu},\code{gshape},\code{gextra} and \code{gmixture} will
+    generate parameter labels in the printout of the object.
+    
+    The printed output includes  \eqn{-2 \log likelihood},
+    the corresponding df , AIC, BIC and ICL-BIC, mean mixture probabilities,
+    mean expected and observed values for each mixture group,
+    the maximum likelihood estimates and standard errors.
+
+    The deviance residuals, fitted values and posterior probabilities
+    are obtained through the use of the methods \code{residuals},\code{fitted}
+    and \code{post}.
+}
+
 
 \value{
-     A list of class `moc' is returned that contains all of the
-     relevant information calculated, including error code.}
+    A list of class \emph{moc} is returned that contains all of the
+    relevant information calculated, including error code generated by
+    \code{nlm}.
+    The printed output includes  \eqn{-2 \log likelihood},
+    the corresponding df , AIC, BIC, entropy and ICL-BIC
+    ( entropy corrected BIC ), mean mixture probabilities,
+    mean expected and observed values for each mixture group,
+    the maximum likelihood estimates and standard errors.}
 
-\references{
+\note{
+    The \code{expected} function is used to compute the fitted values
+    and response residuals (not deviance). It is especially useful when
+    the expected value differs from the location parameter as for censored
+    normal or zero inflated poisson distributions.
+  
+    The method of fixed sample-weight provides design-consistent parameter
+    estimates. However, for the moment the program doesn't provide any
+    methods to include sampling variances resulting from weights
+    estimation. If the user wants to incorporate weights estimation
+    sampling variances it could be achieved, for example, by including
+    \code{moc} model estimation in a \emph{jacknife} loop.
+
+    Be aware that degrees of freedom (df) for mixture models are usually
+    useless ( if not meaningless ) and likelihood-ratio of
+    \emph{apparently} nested models often doesn't converge to a
+    Chi-Square with corresponding df.
+  }   
+
+
+  \references{
 McLachlan, Geoffrey and Peel, David (2000) \emph{Finite mixture models},Wiley-Interscience, New York.
 
 Roeder, K., Lynch, K. and Nagin, D. (1999) \emph{Modeling Uncertainty in
@@ -122,11 +141,13 @@ Lindsay, Bruce G. and Roeder, K. (1992) \emph{Residual diagnostics for mixture m
    
 \author{Bernard Boulerice <\email{Bernard.Boulerice@umontreal.ca}>}
 
-\seealso{\code{\link{residuals.moc}},\code{\link{fitted.moc}},\code{\link{post.moc}},\code{\link{AIC.moc}},\code{\link{logLik.moc}},\code{\link{obsfit.moc}},\code{\link{nlm}}}
+\seealso{\code{\link{print.moc}},\code{\link{plot.moc}},\code{\link{residuals.moc}},
+  \code{\link{plot.residuals.moc}},\code{\link{fitted.moc}},\code{\link{post.moc}},\code{\link{AIC.moc}},
+    \code{\link{logLik.moc}},\code{\link{obsfit.moc}},\code{\link{nlm}}}
 
 \examples{
 
-data(hyp)
+data(moc)
 
 # Censored Normal
 
@@ -137,50 +158,55 @@ mi*pnorm((min-mu)/sig)+ma*(1-pnorm((max-mu)/sig))+
 (1-mi-ma)*dnorm((x-mu)/sig)/sig}
 
 cmean<-function(mu,sig,min,max) {
-max-(max-mu)*pnorm((max-mu)/sig)+(min-mu)*pnorm((min-mu)/sig)
--sig*(dnorm((max-mu)/sig)-dnorm((min-mu)/sig)) }
+max-(max-mu)*pnorm((max-mu)/sig)+(min-mu)*pnorm((min-mu)/sig)-
+sig*(dnorm((max-mu)/sig)-dnorm((min-mu)/sig)) }
 
-cnorm1<-function(x,mu,sig,...) {cnorm(x,mu,sig,0,10)}
-gmu1<- function(p) {rbind(c(rep(p[1],3),rep(p[2],3),rep(p[3],3)))}
+cnorm1<-function(x,mu,sig,...) {cnorm(x,mu,sig,0,14)}
+gmu1<- function(p) {rbind(c(rep(p[1],4),rep(p[2],4),rep(p[3],4)))}
+attr(gmu1,"parameters")<-c("  cons1","  cons2","  cons3")
 
 # Homogeneous variances
 
-gshape1<- function(p) {rbind(c(rep(exp(p[1]),9)))}
-cmean1<-function(p) { cmean(gmu1(p[1:3]),gshape1(p[4]),0,10) }
+gshape1<- function(p) {rbind(c(rep(exp(p[1]),12)))}
+attr(gshape1,"parameters")<-c("  log(std.dev)")
+cmean1<-function(p) { cmean(gmu1(p[1:3]),gshape1(p[4]),0,14) }
 
 moc1<-
-moc(hyp[,2:4],density=cnorm1,groups=3,gmu=gmu1,gshape=gshape1,expected=cmean1,
-pgmu=c(2.1, 4.5, 7.8),pgshape=c(0.56),pgmix=c(0.6, -1.0), gradtol=1E-4)
+moc(moc.dat[,1:4],density=cnorm1,groups=3,gmu=gmu1,gshape=gshape1,expected=cmean1,
+pgmu=c(0.5, 2, 5),pgshape=c(0.7),pgmix=c(-0.6, -2.0), gradtol=1E-4)
 
 \dontrun{
 # Heterogeneous variances across mixture groups
 
-gshape2<-function(p) {rbind(c(rep(exp(p[1]),3),rep(exp(p[2]),3),rep(exp(p[3]),3)))}
+gshape2<-function(p) {rbind(c(rep(exp(p[1]),4),rep(exp(p[2]),4),rep(exp(p[3]),4)))}
+cmean2<-function(p) { cmean(gmu1(p[1:3]),gshape2(p[4:6]),0,14) }
 
 moc2<-
-moc(hyp[,2:4],density=cnorm1,groups=3,gmu=gmu1,gshape=gshape2,
+moc(moc.dat[,1:4],density=cnorm1,groups=3,gmu=gmu1,gshape=gshape2,expected=cmean2,
 pgmu=moc1$coef[1:3],pgshape=c(rep(moc1$coef[4],3)),pgmix=moc1$coef[5:6]
 ,gradtol=1E-4)
 }
 # Heterogeneous variances across time
 
-gshape3<-function(p) {rbind(c(rep(c(exp(p[1]),exp(p[2]),exp(p[3])),3)))}
+gshape3<-function(p) {rbind(c(rep(c(exp(p[1:4])),3)))}
+cmean3<-function(p) { cmean(gmu1(p[1:3]),gshape3(p[4:7]),0,14) }
 
 moc3<-
-moc(hyp[,2:4],density=cnorm1,groups=3,gmu=gmu1,gshape=gshape3,
-pgmu=moc1$coef[1:3],pgshape=c(rep(moc1$coef[4],3)),pgmix=moc1$coef[5:6],
+moc(moc.dat[,1:4],density=cnorm1,groups=3,gmu=gmu1,gshape=gshape3,expected=cmean3,
+pgmu=moc1$coef[1:3],pgshape=c(rep(moc1$coef[4],4)),pgmix=moc1$coef[5:6],
 gradtol=1E-4)
 
-times<-c(1.7,3,4.2)
+times<-c(1.7,3,4.2,5.6)
 
 \dontrun{
 # Last group is a linear function of time
 
-gmu1t<-function(p) {rbind(c(rep(p[1],3),rep(p[2],3),p[3]+p[4]*times))}
+gmu1t<-function(p) {rbind(c(rep(p[1],4),(p[2]+p[3]*times),rep(p[4],4)))}
+cmean1t<-function(p) { cmean(gmu1t(p[1:4]),gshape1(p[5]),0,14) }
 
 moc4<-
-moc(hyp[,2:4],density=cnorm1,groups=3,gmu=gmu1t,gshape=gshape1,
-pgmu=c(moc1$coeff[1:3],0),pgshape=c(moc1$coef[4]),pgmix=moc1$coef[5:6],
+moc(moc.dat[,1:4],density=cnorm1,groups=3,gmu=gmu1t,gshape=gshape1,expected=cmean1t,
+pgmu=append(moc1$coeff[1:3],0,after=2),pgshape=c(moc1$coef[4]),pgmix=moc1$coef[5:6],
 gradtol=1E-4)
 
 
@@ -190,20 +216,20 @@ zip<- function(x,la,shape=1,extra)
 { mix<- exp(extra)/(1+exp(extra))
   mix*(x==0)+(1-mix)*dpois(x,la) }
 }
-gmup<-function(p) {rbind(c(rep(exp(p[1]),3),rep(exp(p[2]),3),exp(p[3]+p[4]*times)))}
+gmup<-function(p) {rbind(c(rep(exp(p[1]),4),exp(p[2]+p[3]*times),rep(exp(p[4]),4)))}
 \dontrun{
 zipfit<-function(p) { gmup(p)/(1+exp(p[5]))}
 
-gextrap<-function(p) {rbind(c(rep(p[1],9)))}
+gextrap<-function(p) {rbind(c(rep(p[1],12)))}
 
 moc5<-
-moc(hyp[,2:4],density=zip,groups=3,gmu=gmup,gextra=gextrap,expected = zipfit,
-pgmu=c(0.6, 1.5, 1.9, 0),pgextra=c(-9),pgmix=c(1, -0.5), gradtol=1E-4)
+moc(moc.dat[,1:4],density=zip,groups=3,gmu=gmup,gextra=gextrap,expected = zipfit,
+pgmu=c(-0.6, 0.64,0, 1.6),pgextra=c(-3),pgmix=c(-0.7, -2), gradtol=1E-4)
 }
 
 # Standard Poisson with mixture depending on time independant covariate
 
-dumm<-hyp[,1]-1
+dumm<-moc.dat[,5]-1
 gmixt<-function(pm){
 mix<-cbind(pm[1]+pm[2]*dumm,pm[3]+pm[4]*dumm)
 cbind(1,exp(mix))/(1+apply(exp(mix),1,sum))}
@@ -211,7 +237,17 @@ cbind(1,exp(mix))/(1+apply(exp(mix),1,sum))}
 poiss<-function(x,la,...) {dpois(x,la)}
 
 moc6<-
-moc(hyp[,2:4],density=poiss,groups=3,gmu=gmup,gmixture=gmixt,
-pgmu=c(0.6, 1.5, 1.9, 0),pgmix=c(1.6,-1,0.4,-1),gradtol=1E-4)
+moc(moc.dat[,1:4],density=poiss,groups=3,gmu=gmup,gmixture=gmixt,
+pgmu=c(-0.6,0.64, 0, 1.6),pgmix=c(-0.2,-1, -1 ,-2),gradtol=1E-4)
+
+obsfit.moc(moc6,along=dumm)
+\dontrun{
+ plot(moc6,times=times,main="MOC fit",xlab="time",ylab="Y")
+ plot(residuals(moc6))
+}
 }
 \keyword{models}
+\keyword{nonlinear}
+\keyword{cluster}
+\keyword{classif}
+\keyword{multivariate}
