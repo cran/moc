@@ -1,13 +1,11 @@
 \name{moc.dat}
 \alias{moc.dat}
-\non_function{} 
-\title{Example data for MOC.}
-\usage{data(moc)}
+\docType{data} 
+\title{Example data for MOC}
+\usage{data(moc.dat)}
    
 \description{
-
   Simulated data from a mixture model.
-  
 }
 
 \format{

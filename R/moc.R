@@ -36,7 +36,7 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
                scale.weight=FALSE, wt=1, data=NULL,
                ndigit=10, gradtol=0.0001, steptol=gradtol, iterlim=100, print.level=2,...)
 {
-  if (!is.null(data)) {attach(data,pos=2);on.exit(detach(data),add=TRUE)}
+  if (!is.null(data)) {attach(data,pos=2);on.exit(detach(2),add=TRUE)}
                                         #   thisEnv <- environment()
                                         #   for( i in names( data ) ) {
                                         #        assign( i, data[[i]], envir = thisEnv )
@@ -152,7 +152,7 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
       stop(paste("\nexpected for group",ig,"should return a matrix of length 1 or",n))
       environment(.expected[[ig]])<-globalenv()
     }
- 
+      
   }
                                         #
   if(is.null(gmixture) && is.null(pgmix)) { .gmixture<-function(...) 1 } else
@@ -160,7 +160,7 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
     if(dim(gmixture(pgmix))[2]!=ng)
       stop(paste("\ngmixture must return a matrix with vectors of length groups=",ng))
     if(any(is.na(gmixture(pgmix)))) stop("\nThe mixture function returns NAs")
-    if(any(gmixture(pgmix)<0)||any(apply(gmixture(pgmix),1,sum))!=1) 
+    if(any(gmixture(pgmix)<0)||any(apply(gmixture(pgmix),1,sum)!=1)) 
       stop("\nThe mixture function components must be >=0 and sum to 1")
     if(dim(gmixture(pgmix))[1]==1 ) {
       fcall<-paste(deparse(gmixture)[1],collapse="")
@@ -275,6 +275,7 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
   attributes(.gextra)<-attributes(gextra)
   attributes(.gmixture)<-attributes(gmixture)
   attributes(.density)<-attributes(density)
+  attributes(.expected)<-attributes(expected)
   gname<-paste("Group",1:ng,sep="")
   names(.gmu)<-gname
   names(.gshape)<-gname
@@ -287,6 +288,9 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
     if(scale.weight) {wt<-substitute(as.vector(a)/mean(as.vector(a)),list(a=wt)) } else
     wt<-substitute(as.vector(a),list(a=wt))
   }
+     if(any(.gmixture(parm$mix)<0)||any(apply(rbind(.gmixture(parm$mix)),1,sum)!=1)) 
+      warning("\nThe final mixture probablities are not all >=0 or don't sum to 1.\n")
+ 
                                         #
                                         # return a list of class moc
                                         #
@@ -335,7 +339,7 @@ post.moc<-function(object,...)
     }
   parm<-split(object$coefficients,rep(c("mu","shape","extra","mix"),object$npar))
   mix<-object$gmixture(parm$mix)
-  if(mix==1) cbind(1) else
+  if(object$groups==1) cbind(1) else
   {
     if(object$joint) {
       post1<-sapply(1:object$groups,function(ind)
@@ -488,7 +492,7 @@ print.moc<-function(x,digits=5,...)
   cat("\n")
   print(modelfit)
   object$ModelFit<-modelfit
-  coeftable<-apply(post.moc(object),2,mean,na.rm=TRUE)
+  coeftable<-apply(post.moc(object),2,weighted.mean,eval(object$prior.weights),na.rm=TRUE)
   object$PostMixtProb<-coeftable
   if(object$groups>1) {cat("\n\nMean Posterior Mixture Probabilities:\n")
   print(coeftable,digits=5)}
@@ -521,10 +525,11 @@ AIC.moc <- function(object,...,k=2)
       on.exit(detach(2),add=TRUE)
       bic<-tmp$BIC
       po<-post.moc(tmp); entropy<--sum(ifelse(po==0,0,eval(tmp$prior.weight)*po*log(po)))
-      c(bic,entropy,bic+2*entropy,tmp$df)}))) else
+      c(-2*tmp$loglikelihood,bic,entropy,bic+2*entropy,tmp$df)}))) else
   val<-as.data.frame(t(sapply(mlist,function(tmp)
-                              c(-2*tmp$loglikelihood+k*sum(tmp$npar),tmp$df))))
-  names(val)<-c(switch(as.character(k),"0"="-2*logLik","2"="AIC",BIC=c("BIC","Entropy","ICL-BIC"),
+                    c(-2*tmp$loglikelihood+k*sum(tmp$npar),tmp$df))))
+  names(val)<-c(switch(as.character(k),"0"="-2*logLik","2"=c("AIC"),
+                       BIC=c("-2*logLik","BIC","Entropy","ICL-BIC"),
                        "generalized AIC"),"Df")
   row.names(val)<-cnames[1:ml]                     
   val
@@ -608,8 +613,11 @@ plot.moc<-function(x,against=1:x$ntimes,main="",xlab="",ylab="",prob.legend=TRUE
   }
   if(dim(as.matrix(against))[2]==1) {w<-cbind(against)} else {w<-cbind(against,against)}
   if(scale) {
-    center<-apply(eval(x$resp),2,mean,na.rm=TRUE)
-    scale<-apply(eval(x$resp),2,sd,na.rm=TRUE)
+    center<-apply(eval(x$resp),2,function(v)
+                  weighted.mean(v,eval(x$prior.weights),na.rm=TRUE))
+    scale<-sqrt(apply(eval(x$resp),2,function(v)
+                 mean(eval(x$prior.weights)*v[nav<-!is.na(v)]^2)/
+                 mean(eval(x$prior.weights)[nav]))-center^2)
   } else {center<-rep(0,x$ntimes);scale<-rep(1,x$ntimes)}
   matplot(w,cbind((t(x$observed.mean)-center)/scale,(t(x$fitted.mean)-center)/scale),
           type="n",main=main,xlab=xlab,ylab=ylab,col=group.colors,...)
@@ -692,8 +700,8 @@ mix.colors.moc<-function(object,group.colors=rainbow(object$groups))
 function(lib, pkg)
 {
   cat("\n",readLines(system.file("DESCRIPTION",package="moc")),sep="\n","\n")
-  cat("\nSupplementary utility functions to help combine MOC models can be found in\n",
-      system.file("Utils","combine.moc.R",package="moc"),
-      ".\nYou will need to source that file to use them. See the file for simple documentation.\n\n")
+  cat("\n   Supplementary utility functions to help combine MOC models can be found in\n",
+      system.file("Utils","combine.moc.R",package="moc"),"\n   See the file for simple documentation.",
+      "\n   You will need to source that file to use those functions.\n\n")
 }
     

@@ -1,6 +1,6 @@
 \name{moc}
 \alias{moc}
-\title{Fit a General Nonlinear Multivariate Mixture Model.}
+\title{Fit a General Nonlinear Multivariate Mixture Model}
 
 \description{
     \code{moc} fits user-specified mixture models with one,two
@@ -81,7 +81,7 @@ ndigit=10, gradtol=0.0001, steptol=gradtol,iterlim=100,print.level=2,\dots)
   the same name in \emph{data}.
   }
   
-  \item{ndigit, gradtol, steptol, iterlim, print.level, \dots}{
+  \item{ndigit, gradtol, steptol, iterlim, print.level, \ldots}{
     Arguments controlling \code{nlm}.}
 }
 
@@ -172,7 +172,7 @@ Lindsay, Bruce G. and Roeder, K. (1992) \emph{Residual diagnostics for mixture m
 
 \examples{
 
-data(moc)
+data(moc.dat)
 
 cnorm.dat<-list()   #This is used as a container for functions and data
 
@@ -264,7 +264,7 @@ cnorm.dat$ages<-cbind(1.7,3,4.2,5.6)
 cnorm.dat$gmu1t<-list(
    Group1=function(pmu) {pmu[1]*ages^0},
    Group2=function(pmu) {pmu[2]+pmu[3]*ages},
-   Group2=function(pmu) {pmu[4]*ages^0})
+   Group3=function(pmu) {pmu[4]*ages^0})
 
 cnorm.dat$cmean1t<-list(
    Group1=function(p) {cmean(gmu1t[[1]](p[1:4]),gshape1[[1]](p[5]),0,14)},

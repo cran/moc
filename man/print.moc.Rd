@@ -40,7 +40,7 @@
 
    \item{FUN}{ User defined function to apply to observed and expected values.}
 
-   \item{\dots}{Unused.}
+   \item{\ldots}{Unused.}
  
  }
 

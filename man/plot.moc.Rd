@@ -5,7 +5,7 @@
 \alias{plot.residuals.moc}
 \alias{mix.colors.moc}
 
-\title{Plotting methods for MOC models.}
+\title{Plotting methods for MOC models}
 
 
 \description{
@@ -55,7 +55,7 @@
   \item{Subject:}{Use the row (subject) index of the response matrix.}
   }}
 
-  \item{main, xlab, ylab, \dots}{ Arguments to be passed to \code{plot},
+  \item{main, xlab, ylab, \ldots}{ Arguments to be passed to \code{plot},
     \code{matplot}.}
 
   \item{prob.legend, col.legend}{ Add a mixture probabilities and

@@ -2,7 +2,7 @@
 \alias{AIC.moc}
 \alias{logLik.moc}
 
-\title{Information Criterion for MOC models.}
+\title{Information Criterion for MOC models}
 
 \description{
 
@@ -24,7 +24,7 @@
 
 \arguments{
 
-  \item{object,\dots}{Objects of class \code{moc}.}
+  \item{object,\ldots}{Objects of class \code{moc}.}
 
   \item{k}{ can be any real number or the string "BIC".}
 }

@@ -16,7 +16,7 @@ TeXCoefTable.moc<-function(object,digits=NULL,headers=TRUE,spacing="\\hspace{24p
   {
     mle <- cbind(object$coef, se<-sqrt(diag(object$cov)) , w <- (object$coef/se)^2, (1 - pchisq(w, 1)))
     nl<-object$npar[1];ns<-object$npar[2];nx<-object$npar[3];nm<-object$npar[4]
-
+    cat("\n \\begin{tabular}{ lllll  }\n\\hline\\hline \n ")
     if(headers) cat("Parameters & Estimates & Standard Error & Wald & $P[\\chi_1^2 > \\textrm{Wald}]$ \\\\ \n \\hline \n")
 
    
@@ -50,7 +50,7 @@ TeXCoefTable.moc<-function(object,digits=NULL,headers=TRUE,spacing="\\hspace{24p
     cat(paste(apply(cbind(lblname,matrix(coeftable,nm,4)),1,paste,collapse=" & "),
               collape=" \\\\ \n"),"\n")
     cat("\\hline\n")}
-
+    cat("\\hline \n \\end{tabular} \n \n ")
     invisible(mle)
 
   }
@@ -65,12 +65,15 @@ TeXCoefTable.moc<-function(object,digits=NULL,headers=TRUE,spacing="\\hspace{24p
 
 TeXFitTable.moc<-function(...,lbl=NULL,digits=NULL,headers=TRUE)
   {
-    fit<-as.matrix(cbind(AIC(...,k=0)[,1],AIC(...,k="BIC")))
+    ng<-sapply(list(...),function(x) x$groups)
+    fit<-as.matrix(cbind(AIC(...,k="BIC"),ng))
     nmoc<-dim(fit)[1]
     if(is.null(lbl)) lbl<-paste(1:nmoc)
-    if(headers) cat("Model & $-2 \\log(\\textrm{Likelihood})$ & BIC & Entropy & ICL-BIC & Df  \\\\ \n ")
+    cat("\n\\begin{tabular}{ lllllll  } \n\\hline\\hline \n")
+    if(headers) cat("Model & $-2 \\log(\\textrm{Likelihood})$ & BIC & Entropy & ICL-BIC & Df & Groups \\\\ \n ")
     cat("\\hline\n")
     cat(paste(apply(cbind(lbl,formatC(fit,digits=digits)),1,paste,collapse=" & "),collapse=" \\\\ \n")," \\\\ \n")
+    cat("\\hline\\hline \n \\end{tabular} \n  ")
     invisible(fit)
   }
 
@@ -84,11 +87,13 @@ TeXFitTable.moc<-function(...,lbl=NULL,digits=NULL,headers=TRUE)
 TeXMixPTable.moc<-function(object,lbl=NULL,digits=NULL,headers=TRUE)
   {
     np<-cumsum(object$npar)
+    cat(paste("\n\\begin{tabular}{ l*{",eval(object)$groups,"}{l}}\n\\hline\\hline \n "))
     if(!is.null(lbl) & headers) cat(" & ")
     if(headers) cat(paste("Group",1:object$groups,collapse=" & "),"\\\\ \n ")
     prob<-apply(object$gmixture(object$coef[(np[3]+1):np[4]]), 2, mean)
     if(!is.null(lbl)) cat(lbl," & ")
     cat(paste(format(prob,digits=digits),collapse=" & "),"\\\\ \n")
+    cat("\n \\hline\\hline \n\\end{tabular} \n \n ")
     invisible(prob)
   }
 
@@ -101,6 +106,7 @@ TeXMixPTable.moc<-function(object,lbl=NULL,digits=NULL,headers=TRUE)
 
 TeXMeanTable.moc<-function(object,digits=NULL,headers=TRUE,spacing="\\hspace{24pt}")
   {
+    cat(paste("\n\\begin{tabular}{ l*{",eval(object)$ntimes,"}{l}}\n\\hline\\hline \n "))
     if(headers) cat("Fitted \\\\  \n")
     cat(" & ",paste(dimnames(object$fitted.mean)[[2]],collapse=" & "),"\\\\ \n")
     cat(paste(spacing,apply(cbind(dimnames(object$fitted.mean)[[1]],formatC(object$fitted.mean,digits=digits))
@@ -110,7 +116,7 @@ TeXMeanTable.moc<-function(object,digits=NULL,headers=TRUE,spacing="\\hspace{24p
     cat(" & ",paste(dimnames(object$observed.mean)[[2]],collapse=" & "),"\\\\ \n")
     cat(paste(spacing,apply(cbind(dimnames(object$observed.mean)[[1]]
                     ,formatC(object$observed.mean,digits=digits)),1,paste,collapse=" & "),collapse=" \\\\ \n")," \\\\ \n")
-    cat("\\hline \n")
+    cat("\n \\hline\\hline \n \\end{tabular} \n \n ")
     invisible(rbind(object$fitted.mean,object$observed.mean))
   }
 

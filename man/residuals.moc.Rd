@@ -3,7 +3,7 @@
 \alias{post.moc}
 \alias{post}
 
-\title{Posterior and residuals methods for MOC models.}
+\title{Posterior and residuals methods for MOC models}
 
 \description{
    
@@ -42,7 +42,7 @@
   \item{within}{ Specify if the posterior weights are rescaled within each
     mixture group.}
   
-  \item{\dots}{Unused.}
+  \item{\ldots}{Unused.}
 }
 
 \details{

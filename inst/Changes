@@ -1,3 +1,60 @@
+Changes in MOC 0.8-2
+======================
+
+
+Bugs Fixes:
+-----------
+   
+   The "Mean Posterior Mixture Probabilities" reported by print.moc is now
+   a weighted mean.
+
+   The documentation for moc.dat does not issue a check warning anymore.
+      
+   The length of the parameters np1 and np2 of utility function combine.parfun 
+   (see Utils/combine.moc.R) can now be longer then 17.
+
+New Features:
+-------------
+
+   The functions to create latex tables in the file Sweave/moc_sweave.R now
+   also generate the tabular environment.
+
+   The report generation file Sweave/moc.Rnw now include a pair plot of the
+   posterior probabilities.
+
+
+Changes in MOC 0.8-1
+======================
+
+
+Bugs Fixes:
+-----------
+
+   The check for mixture probablities summing to 1 was not performed, it is now
+   done before and after fitting the model.
+
+   Attributes of the expected function are now preserved.
+
+   Warning "the condition has length > 1" shouldn't appear anymore (I hope):
+   the line if (mix == 1) have been changed to if(object$groups==1) in post.moc.
+
+
+
+New Features:
+-------------
+
+   AIC( ,k="BIC") also output -2*logLik.
+
+   Scale option in plot.moc now uses weighted mean and standard deviation.
+
+   Parameters np1 and np2 of utility function combine.parfun (see Utils/combine.moc.R)
+   now expect parameter indexes insted of numbers of parameters.
+
+   Author and e-mail can be set in Sweave (see Sweave/moc.Rnw).
+
+
+
+
 Changes in MOC 0.8
 ======================
 
@@ -5,56 +62,56 @@ Changes in MOC 0.8
 Bugs Fixes:
 -----------
 
-Printing of moc objects without pgmu parameters is now working
-properly.
+   Printing of moc objects without pgmu parameters is now working
+   properly.
 
-The expected function was not assigned internally when returnig
-a matrix.
+   The expected function was not assigned internally when returnig
+   a matrix.
 
-Entropy now works with 0 posterior probabilities.
+   Entropy now works with 0 posterior probabilities.
 
-The observed posterior means were not computed correctly when there
-was missing values in the response variable. The values were divided
-by the total weighted posterior propabilities instead of the total
-over non-missing responses. This is fixed in the moc object and in
-the method obsfit.moc.
+   The observed posterior means were not computed correctly when there
+   was missing values in the response variable. The values were divided
+   by the total weighted posterior propabilities instead of the total
+   over non-missing responses. This is fixed in the moc object and in
+   the method obsfit.moc.
 
-There where some problems when plotting the residuals with a big
-number of groups, there is a new option to resolve this (see New
-Features).
+   There where some problems when plotting the residuals with a big
+   number of groups, there is a new option to resolve this (see New
+   Features).
 
 
 New Features:
 -------------
 
-The functions gmu,gshape,gextra,expected are now list of functions:
-one for each group. It should make coding of groups definition easier.
-It uses less memory, so you can run larger models.
+   The functions gmu,gshape,gextra,expected are now list of functions:
+   one for each group. It should make coding of groups definition easier.
+   It uses less memory, so you can run larger models.
 
-There are new options:
+   There are new options:
 
    - the option check.length allows to bypass the dimension check of
-   the returned value of the functions in gextra. This allows using
-   densities with more parameters.
+     the returned value of the functions in gextra. This allows using
+     densities with more parameters.
    - plot.moc now has the option scale which tells to plot the scaled
-   variables, prob.legend ta add a mixture probablity legend and
-   group.colors to specify the group colors.
+     variables, prob.legend ta add a mixture probablity legend and
+     group.colors to specify the group colors.
    - plot.residuals.moc has the option groups to specify for which
-   mixture groups the plot is requested.
+     mixture groups the plot is requested.
 
-Entropy is now weighted.
+   Entropy is now weighted.
 
-There are some new functions:
+   There are some new functions:
 
    - profilesplot.moc that nicely plot subject profiles with a mix of
-   colors.
+     colors.
    - mix.colors.moc computes subjects color by mixing group colors
-   according to posterior probabilities. This function is in the file
-   Utils.moc.R which is sourced when we load the library. This file
-   also contain the functions glogit and inv.glogit.
+     according to posterior probabilities. This function is in the file
+     Utils.moc.R which is sourced when we load the library. This file
+     also contain the functions glogit and inv.glogit.
 
-The file combine.moc.R contains some utility functions to combine moc
-models and must be sourced by the user to be available.
+   The file combine.moc.R contains some utility functions to combine moc
+   models and must be sourced by the user to be available.
 
 
 

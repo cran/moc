@@ -42,7 +42,7 @@ eval(parse(text=fbody),envir=.GlobalEnv)
 # The function names fname1 and fname2 must be supplied quoted, one of the function name
 # can be the empty string "" but not both.
 #
-# You must supply the number of parameter of each function in np1 and np2,
+# You must supply the parameter indexes of each function in np1 and np2,
 # the returned number of rows in n (both function should return the same number of rows)
 # the vector length of each data set in nvar1 and nvar2, and the number of groups
 # in ng1 and ng2.
@@ -56,8 +56,8 @@ function(fname1,fname2,np1,np2,nvar1,nvar2,n,ng1,ng2,set=merge(1:ng1,1:ng2))
 {
 if(dim(set)[2]!=2) stop("set must be a two column matrix")
 cat("\nThe combined functions is for a ",dim(set)[1]," groups model.\n\n")
-if ((length(c(np1,np2))!=2) | (np1<0) | (np2<0) | any(as.integer(c(np1,np2))!=c(np1,np2)))
-  stop("np1 and np2 must be 2 integers greater or equal to 0")
+if ( any(np1<0) | any(np2<0) | any(as.integer(c(np1,np2))!=c(np1,np2)))
+  stop("np1 and np2 must be sets of integers greater or equal to 0")
 if ((length(c(nvar1,nvar2))!=2) | (nvar1<1) | (nvar2<1) | any(as.integer(c(nvar1,nvar2))!=c(nvar1,nvar2)))
   stop("nvar1 and nvar2 must be 2 integers greater or equal to 1")
 if ((length(c(ng1,ng2))!=2) | (ng1<1) | (ng2<1) | any(as.integer(c(ng1,ng2))!=c(ng1,ng2)))
@@ -73,14 +73,14 @@ if (fname1=="")
     if (!exists(fname1)) stop(paste("The list of functions ",fname1," must exists"))
     if (eval(parse(text=paste("length(",fname1,")")))!=ng1) stop("Wrong number of groups ng1.\n")
     for(i in 1:ng1) {
-      dim1<- dim(eval(parse(text=paste(fname1,"[[",i,"]](rep(0,",np1,"))",sep=""))))
+      dim1<- dim(eval(parse(text=paste(fname1,"[[",i,"]](rep(0,",length(np1),"))",sep=""))))
       n1<- dim1[1]
       if((n1>1) & (n1!=n)) stop(paste(fname1,"[[",i,"]] must return 1 row or ",
                      n," rows"))
       if(dim1[2]!=(nvar1)) stop(paste("The number of columns returned by ",fname1,
                                       "[[",i,"]] is incompatible with nvar1"))
       if((n1==1) & (n>1)) temp<-paste("%x%rep(1,",n,")") else temp=""
-    x[[i]]<- paste("x<-array(",fname1,"[[",i,"]](p[1:",np1,"])",temp,",c(",
+    x[[i]]<- paste("x<-array(",fname1,"[[",i,"]](p[",paste(deparse(np1),collapse=""),"])",temp,",c(",
                    paste(n,nvar1,sep=","),"))\n")
     }
   }
@@ -93,13 +93,13 @@ if (fname2=="")
     if (!exists(fname2)) stop(paste("The function ",fname2," must exists"))
     if (eval(parse(text=paste("length(",fname2,")")))!=ng2) stop("Wrong number of groups ng2.\n")
      for(i in 1:ng2) {
-    dim2<- dim(eval(parse(text=paste(fname2,"[[",i,"]](rep(0,",np2,"))",sep=""))))
+    dim2<- dim(eval(parse(text=paste(fname2,"[[",i,"]](rep(0,",length(np2),"))",sep=""))))
     n2<-dim2[1]
     if((n2>1) & (n2!=n)) stop(paste(fname2,"[[",i,"]] must return 1 row or ",n," rows"))
     if(dim2[2]!=(nvar2)) stop(paste("The number of columns returned by ",fname2,
                                         "[[",i,"]]is incompatible with nvar2"))
     if((n2==1) & (n>1)) temp<-paste("%x%rep(1,",n,")") else temp=""
-    y[[i]]<- paste("y<-array(",fname2,"[[",i,"]](p[",np1+1,":",np1+np2,"])",temp,",c(",paste(n,nvar2,sep=","),"))\n")
+    y[[i]]<- paste("y<-array(",fname2,"[[",i,"]](p[",paste(deparse(np2),collapse=""),"])",temp,",c(",paste(n,nvar2,sep=","),"))\n")
   }
   }
 f.list<-list()

@@ -1,8 +1,8 @@
-AIC.moc                 Information Criterion for MOC models.
+AIC.moc                 Information Criterion for MOC models
+moc.dat                 Example data for MOC
 moc                     Fit a General Nonlinear Multivariate Mixture
-                        Model.
-moc.dat                 Example data for MOC.
-plot.moc                Plotting methods for MOC models.
+                        Model
+plot.moc                Plotting methods for MOC models
 print.moc               Fitted MOC model
-residuals.moc           Posterior and residuals methods for MOC models.
+residuals.moc           Posterior and residuals methods for MOC models
 utils.moc               MOC utility functions
