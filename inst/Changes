@@ -1,3 +1,58 @@
+Changes in MOC 1.0-0
+======================
+
+   The MOC library have now been extensively tested on a lot of real
+   and simulated data sets, the results have been compared to other
+   mixture software and is known to produce correct reliable results.
+   Some critical computations are now done with a C++ external library
+   which results in an increase speed between 30% to 80%. The software
+   is now considered a full production tool, consequently the version number
+   "jumped" to 1.0
+
+
+Bugs Fixes:
+-----------
+
+   The MixtProb variable added by print.moc in the moc object is now
+   the correct table. This variable is not used so it doesn't affect
+   any results.
+
+   When there were no parameter to estimate (all fixed), moc tried to return an
+   undefined value, it now returns the correct computed value.
+
+   Changed conditionals (if) in plot.residuals.moc to get rid of
+   useless warning messages.
+
+   Doubled loglik in print.moc have been removed.
+
+   Changed options in parse and deparse codes to suit the new R
+   versions (no parse error).
+
+
+New Features:
+-------------
+
+   The expected function can also depends on the pgmix parameters.
+
+   entropyplot.moc has a new argument shade.gr.col
+
+   Two new types of residuals.moc : gradient and mixture.
+
+   Several new functions:
+
+       update.moc	: update a fitted MOC object.
+       confint.moc	: parameters confidence intervals.
+       profiles.postCI	: profiles patterns confidence intervals.
+       loglike.moc	: computes log(like) at specified parameters values.
+       npmle.gradient	: computes mixture and non-parametric gradient.
+       density.moc	: computes and plot mixture density estimates.
+
+   New Utils rasch.R to help construct Rasch models with MOC.
+
+   Much faster because of the use of a C++ dynamical library.
+
+
+
 Changes in MOC 0.8-4
 ======================
 

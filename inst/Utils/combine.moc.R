@@ -113,7 +113,7 @@ f.list
 }
 
 
-# The function combine.start.mix combines the mixture probability 
+# The function combine.prob combines the mixture probability 
 # for two moc models. This function is useful to compute starting values for
 # the full joint model.
 
@@ -131,7 +131,7 @@ f.list
   }
 
 # The following function find unique patterns in the data X
-# abd return a matrix with those pattern and a column ot total weight
+# and returns a matrix with those pattern and a column ot total weight
 
 find.unique.pattern<-function(X,w=rep(1,dim(X)[1]))
 {

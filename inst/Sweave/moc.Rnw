@@ -1,6 +1,6 @@
 % -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
 
-% Copyright (C) 2002-2004  Bernard Boulerice
+% Copyright (C) 2002-2005  Bernard Boulerice
 % This file is a template, you can use it without modification.
 % You don't have permission to modify it but you can modify
 % any copy of it as long as you rename the file and change

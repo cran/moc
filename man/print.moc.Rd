@@ -2,71 +2,69 @@
 \alias{print.moc}
 \alias{fitted.moc}
 \alias{obsfit.moc}
-\title{Fitted MOC model}
+\title{Summary methods for fitted MOC models}
 
 \description{
+  
+  \code{print.moc} prints information contained in a fitted \code{moc}
+  object. The \code{attributes} \emph{parameters} of the functions
+  \code{gmu}, \code{gshape}, \code{gextra} and \code{gmixture} will be
+  used to label the output.
+  
+  \code{fitted.moc} computes the expected values for each observation
+  of a \code{moc} object using its \code{expected} function.
+  
+  \code{obsfit.moc} computes and prints the mean posterior
+  probabilities and the posterior means of a user specified function of
+  the expected and observed values, separated with respect
+  to the specified variable.
+}
 
-   \code{print.moc} prints information contained in a fitted \code{moc}
-   object. The \code{attributes} \emph{parameters} of the functions
-   \code{gmu},\code{gshape},\code{gextra} and \code{gmixture} will be
-   used to label the output.
+\usage{
 
-   \code{fitted.moc} computes the expected values for each observation
-   of a \code{moc} object.
+\method{print}{moc}(x, digits = 5, \dots)
 
-   \code{obsfit.moc} computes and prints the mean posterior
-   probabilities and the posterior means of a user specified function of
-   the expected and observed values, splitted with respect
-   to the specified variable.
- }
+\method{fitted}{moc}(object, \dots)
 
- \usage{
-
-   \method{print}{moc}(x,digits=5,\dots)
-
-   \method{fitted}{moc}(object,\dots)
-
-   obsfit.moc(object,along=NULL,FUN=function(x) x)
+obsfit.moc(object, along = list(cons = rep(1, object$nsubject)),
+           FUN = function(x) x)
 
  }
 
  \arguments{
-
-   \item{x,object}{ Objects of class \code{moc}.}
-
+   
+   \item{x, object}{ Objects of class \code{moc}.}
+   
    \item{digits}{ Number of digits to be printed.}
    
-  \item{along}{ Splitting variable. }
-
+   \item{along}{ Splitting variable. }
+   
    \item{FUN}{ User defined function to apply to observed and expected values.}
-
-   \item{\ldots}{Unused.}
- 
+   
+   \item{\ldots}{ Unused.}
+   
  }
-
- \details{ \code{Obsfit.moc} will first compute the posterior probabilities
-   \deqn{\hat{\tau}_{i,k} = \frac{\hat{\pi}_k(z_i,x_i)
-   \hat{h}_k( y_i | x_i)}{\sum_k \hat{\pi}_k(z_i, x_i)
-   \hat{h}_k( y_i | x_i)}}{tau[i,k] = p_k( z[i], x[i])
-   h_k( y[i] | x[i]) /  \Sum_k (p_k(z[i], x[i])
-   h_k( y[i] | x[i]) )}
- using \code{post.moc} and then the weighted posterior mean probabilities
- \deqn{\hat{\bar{\tau}}_k = \frac{\sum_i wt_i\,\hat{\tau}_{i,k}}
-   {\sum_i wt_i}}{\Sum_i (wt[i] * tau[i,k]) / \Sum_i wt[i]}
- The weighted posterior means of a function \eqn{f()} of the data are computed as
- \deqn{\frac{\sum_i wt_i\,\hat{\tau}_{i,k}\,f(y_i)}{\sum_i
-     wt_i\,\hat{\tau}_{i,k}}}{\Sum_i (wt[i] * tau[i,k] * f(y[i])) /
-   \Sum_i (wt[i] * tau[i,k])}
-where both sums are taken over index of valid data \eqn{y_i}{y[i]}.}
-
+ 
+ \details{ \code{obsfit.moc} will first compute the posterior probabilities
+   for all subjects in each mixture using \code{\link{post.moc}} and
+   then the weighted posterior mean probabilities 
+   \deqn{\hat{\bar{\tau}}_k = \frac{\sum_i wt_i\,\hat{\tau}_{i,k}}
+     {\sum_i wt_i}}{\Sum_i (wt[i] * post[i,k]) / \Sum_i wt[i]}
+   The weighted posterior means of a function \eqn{g()} of the data
+   ( which are the empirical estimators of the conditional expectation given
+   mixture group ) are computed as
+   \deqn{\frac{\sum_i wt_i\,\hat{\tau}_{i,k}\,g(y_i)}{\sum_i
+       wt_i\,\hat{\tau}_{i,k}}}{\Sum_i (wt[i] * post[i,k] * g(y[i])) /
+     \Sum_i (wt[i] * post[i,k])}
+   where both sums are taken over index of valid data \eqn{y_i}{y[i]}.}
 
  \value{ All these methods return their results invisibly.}
 
- \author{Bernard Boulerice <\email{Bernard.Boulerice@umontreal.ca}>}
-
- \seealso{\code{\link{moc}},\code{\link{residuals.moc}},\code{\link{plot.moc}},
- \code{\link{AIC.moc}}}
-
-\keyword{methods}
-\keyword{print}
-\keyword{utilities}
+ \author{Bernard Boulerice <\email{Bernard.Boulerice@sympatico.ca}>}
+ 
+ \seealso{\code{\link{moc}}, \code{\link{residuals.moc}}, \code{\link{post.moc}},
+   \code{\link{plot.moc}}, \code{\link{AIC.moc}}}
+ 
+ \keyword{methods}
+ \keyword{print}
+ \keyword{utilities}

@@ -1,12 +1,12 @@
 \name{moc.dat}
 \alias{moc.dat}
-\docType{data} 
+\docType{data}
+
 \title{Example data for MOC}
+
 \usage{data(moc.dat)}
    
-\description{
-  Simulated data from a mixture model.
-}
+\description{Simulated data from a mixture model.}
 
 \format{
   This data frame contains 500 rows (subjects) with the following columns
@@ -18,7 +18,6 @@
 }
 
 
-\author{Bernard Boulerice <\email{Bernard.Boulerice@umontreal.ca}>}
-
+\author{Bernard Boulerice <\email{Bernard.Boulerice@sympatico.ca}>}
 
 \keyword{datasets}
