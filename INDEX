@@ -1,4 +1,4 @@
-hyp                      Example data for MOC.
-moc                      General Nonlinear Mixture of Curves.
-post                     Generic function post.
-residuals.moc            Methods for Mixture of Curves.
+hyp                     Example data for MOC.
+moc                     General Nonlinear Mixture of Curves.
+post                    Generic function post.
+residuals.moc           Methods for Mixture of Curves models.

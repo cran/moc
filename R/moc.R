@@ -1,7 +1,7 @@
 #
 #  moc : Function to fit general mixture of curves models 
 #         
-#  Copyright (C) 2000 Bernard Boulerice
+#  Copyright (C) 2000-2002 Bernard Boulerice
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public Licence as published by
@@ -23,26 +23,27 @@
 #       gmu=NULL, gshape=NULL, gextra=NULL, gmixture=glogit, expected = NULL,
 #       pgmu=NULL, pgshape=NULL, pgextra=NULL, pgmix=NULL, wt=1,
 #       ndigit=10, gradtol=0.0001, 
-#       steptol=gradtol,iterlim=100,...)
+#       steptol=gradtol,iterlim=100,print.level=2,...)
 #
 #  DESCRIPTION
 #
-# Function to fit general trajectory models with mixture
+# Function to fit general nonlinear mixture models
 #
 #
 moc<- function(y,density=NULL,joint=FALSE, groups=1,
        gmu=NULL, gshape=NULL, gextra=NULL, gmixture=glogit, expected = NULL,
        pgmu=NULL, pgshape=NULL, pgextra=NULL, pgmix=NULL, wt=1,
        ndigit=10, gradtol=0.0001, 
-       steptol=gradtol,iterlim=100,...)
+       steptol=gradtol,iterlim=100,print.level=2,...)
 {
-glogit<- function(gmix) {rbind(c(1,exp(gmix)))/(1+sum(exp(gmix)))}
+
 call <- sys.call()
 resp<-as.matrix(y)
 ndim<-dim(resp)
 n<-ndim[1]
 nt<-ndim[2]
 ng<-groups
+glogit<- if(ng==1) {function(gmix) {cbind(1)}} else {function(gmix) {rbind(c(1,exp(gmix)))/(1+sum(exp(gmix)))}}
 #
 # check density
 #
@@ -67,8 +68,8 @@ if(length(dim(gmu(pgmu)))!=2||dim(gmu(pgmu))[2]!=ng*nt)
 if(any(is.na(gmu(pgmu)))) stop("The gmu function returns NAs")
 if(dim(gmu(pgmu))[1]==1){
    fcall<-paste(deparse(gmu)[1],collapse="")
-   fbody<-paste(deparse(gmu)[-1],collapse="")
-   ftext<-paste(fcall,"{",fbody,"%x%",repn,"}")
+   fbody<-paste(deparse(gmu)[-1],collapse="\n")
+   ftext<-paste(c(fcall,"{",fbody,"%x%",repn,"}"),collapse="")
    gmu1<-eval(parse(text=ftext))} else
    if(dim(gmu(pgmu))[1]==n) gmu1<-gmu else
       stop("gmu should return a matrix of length 1 or",n)
@@ -80,8 +81,8 @@ if(is.null(gshape) && is.null(pgshape)) gshape1<- function(...) 1 else
   if(any(is.na(gshape(pgshape)))) stop("The shape function returns NAs")
   if(dim(gshape(pgshape))[1]==1) {
    fcall<-paste(deparse(gshape)[1],collapse="")
-   fbody<-paste(deparse(gshape)[-1],collapse="")
-   ftext<-paste(fcall,"{",fbody,"%x%",repn,"}")
+   fbody<-paste(deparse(gshape)[-1],collapse="\n")
+   ftext<-paste(c(fcall,"{",fbody,"%x%",repn,"}"),collapse="")
    gshape1<-eval(parse(text=ftext))} else
    if(dim(gshape(pgshape))[1]==n ) gshape1<-gshape else
         stop("gshape should return a matrix of length 1 or",n)
@@ -94,8 +95,8 @@ if(is.null(gextra) && is.null(pgextra)) gextra1<- function(...) 1 else
   if(any(is.na(gextra(pgextra)))) stop("The extra parameters function returns NAs")
   if(dim(gextra(pgextra))[1]==1) {
    fcall<-paste(deparse(gextra)[1],collapse="")
-   fbody<-paste(deparse(gextra)[-1],collapse="")
-   ftext<-paste(fcall,"{",fbody,"%x%",repn,"}")
+   fbody<-paste(deparse(gextra)[-1],collapse="\n")
+   ftext<-paste(c(fcall,"{",fbody,"%x%",repn,"}"),collapse="")
    gextra1<-eval(parse(text=ftext))} else
    if(dim(gextra(pgextra))[1]==n ) gextra1<-gextra else
         stop("gextra should return a matrix of length 1 or",n)
@@ -109,8 +110,8 @@ if(is.null(gmixture) && is.null(pgmix)) { gmixt<-function(...) 1 } else
   stop("The mixture function components must be >=0 and sum to 1")
   if(dim(gmixture(pgmix))[1]==1 ) {
     fcall<-paste(deparse(gmixture)[1],collapse="")
-    fbody<-paste(deparse(gmixture)[-1],collapse="")
-    ftext<-paste(fcall,"{",fbody,"%x%",repn,"}")
+    fbody<-paste(deparse(gmixture)[-1],collapse="\n")
+    ftext<-paste(c(fcall,"{",fbody,"%x%",repn,"}"),collapse="")
     gmixt<-eval(parse(text=ftext))} else
     if(dim(gmixture(pgmix))[1]==n) gmixt<-gmixture else
       stop("gmixture should return a matrix of length 1 or",n)
@@ -128,8 +129,8 @@ else {
   if(any(is.na(expected(ptot)))) stop("The expected function returns NAs")
   if(dim(expected(ptot))[1]==1){
   fcall<-paste(deparse(expected)[1],collapse="")
-  fbody<-paste(deparse(expected)[-1],collapse="")
-  ftext<-paste(fcall,"{",fbody,"%x%",repn,"}")
+  fbody<-paste(deparse(expected)[-1],collapse="\n")
+  ftext<-paste(c(fcall,"{",fbody,"%x%",repn,"}"),collapse="")
   expected<-eval(parse(text=ftext))} else
   if(dim(expected(ptot))[1]!=n)  stop("gmu should return a matrix of length 1 or",n)
    environment(expected)<-globalenv()
@@ -172,7 +173,7 @@ if(is.na(loglike(p)))
 if(np>0){
 	dt<-system.time(z0 <- nlm(loglike,p=p,hessian=TRUE,
 		ndigit=ndigit,gradtol=gradtol,steptol=steptol,
-		iterlim=iterlim,...))[3]} else
+		iterlim=iterlim,print.level=print.level,...))[3]} else
          {dt<-system.time(z0 <- list(minimum=fscale,estimate=p,code=0,iterations=0))[3]}
 cat("\n Estimation took ",dt," seconds.\n")
 #
@@ -198,9 +199,9 @@ post<-post/apply(post,1,sum)
 mpost<-apply(post,2,mean)
 fitted<-array(expected(z0$estimate),dim=c(n,nt,ng))
 fitted.mean<-apply(aperm(fitted,c(1,3,2))*rep(post,nt),c(2,3),mean,na.rm=TRUE)/mpost
-dimnames(fitted.mean)<-list(paste("Group",1:ng,sep=""), ifelse(is.na(nchar(temp<-colnames(resp))[1:nt]) ,paste("Time",1:nt,sep=""),temp))
+dimnames(fitted.mean)<-list(paste("Group",1:ng,sep=""), ifelse(is.na(nchar(temp<-dimnames(resp)[[2]])[1:nt]) ,paste("Time",1:nt,sep=""),temp))
 observed.mean<-t(apply(array(apply(post,2,"*",resp),dim=c(n,nt,ng)),c(2,3),mean,na.rm=TRUE))/mpost
-dimnames(observed.mean)<-list(paste("Group",1:ng,sep=""), ifelse(is.na(nchar(temp<-colnames(resp))[1:nt]) ,paste("Time",1:nt,sep=""),temp))
+dimnames(observed.mean)<-list(paste("Group",1:ng,sep=""), ifelse(is.na(nchar(temp<-dimnames(resp)[[2]])[1:nt]) ,paste("Time",1:nt,sep=""),temp))
 #
 # clean functions environment and
 # return a list of class moc
@@ -213,7 +214,7 @@ environment(gmixt)<-globalenv()
 
 z1 <- list(
 	call=call,
-        resp=call[[2]],
+        resp=match.call()$y,
 	density=dens,
         joint=joint,
         nsubject=n,
@@ -226,7 +227,7 @@ z1 <- list(
 	gextra=gextra1,
 	gmixture=gmixt,
 	expected = expected,
-        prior.weights=wt,
+        prior.weights=ifelse(is.null(match.call()$wt),1,match.call()$wt),
 	loglikelihood=-z0$minimum,
 	df=sum((!is.na(resp))*wt)-np,
 	AIC=2*z0$minimum+2*np,
@@ -244,6 +245,7 @@ post<-function(object,...) UseMethod("post")
 
 post.moc<-function(object,...)
 {
+  if(class(object)!="moc") stop("\n\tObject must be of class moc\n")
  n<-object$nsubject
  dim1<-c(n,object$ntimes,object$groups)
  nm<-object$npar[1]
@@ -270,15 +272,17 @@ post.moc<-function(object,...)
 
 fitted.moc<-function(object,...)
 {
+  if(class(object)!="moc") stop("\n\tObject must be of class moc\n")
  n<-object$nsubject
  dim1<-c(n,object$ntimes,object$groups)
  fit<-array(object$expected(object$coefficients),dim=dim1)
- dimnames(fit)<-list(NULL, ifelse(is.na(nchar(temp<-colnames(eval(object$resp)))[1:dim1[2]]) ,paste("Time",1:dim1[2],sep=""),temp),paste("Group",1:dim1[3],sep=""))
+ dimnames(fit)<-list(NULL, ifelse(is.na(nchar(temp<-dimnames(eval(object$resp))[[2]])[1:dim1[2]]) ,paste("Time",1:dim1[2],sep=""),temp),paste("Group",1:dim1[3],sep=""))
  return(fit)
 }
 
-residuals.moc<-function(object,...,type="deviance",post.weight=TRUE,within=T)
+residuals.moc<-function(object,...,type="deviance",post.weight=TRUE,within=FALSE)
 {
+  if(class(object)!="moc") stop("\n\tObject must be of class moc\n")
  choices<-c("deviance","response")
  type<-match.arg(type,choices)
  n<-object$nsubject
@@ -310,7 +314,7 @@ residuals.moc<-function(object,...,type="deviance",post.weight=TRUE,within=T)
             tmp }
        )
 
- dimnames(res)<-list(NULL,ifelse(is.na(nchar(temp<-colnames(eval(object$resp)))[1:dim1[2]]) ,paste("Time",1:dim1[2],sep=""),temp),paste("Group",1:dim1[3],sep=""))
+ dimnames(res)<-list(NULL,ifelse(is.na(nchar(temp<-dimnames(eval(object$resp))[[2]])[1:dim1[2]]) ,paste("Time",1:dim1[2],sep=""),temp),paste("Group",1:dim1[3],sep=""))
  if(post.weight) res<-res*array(wpost[,rep(1:ng,rep(nt,ng))],dim=dim1)
  return(res)
 }
@@ -319,6 +323,7 @@ residuals.moc<-function(object,...,type="deviance",post.weight=TRUE,within=T)
 print.moc<-function(x,...)
 {
  object<-x
+ if(class(object)!="moc") stop("\n\tObject must be of class moc\n")
  cat("\n\t\t",object$groups,"Mixture of Curves\n\n\n")
  if(object$joint) cat("joint ")
  cat("Density:\n",gsub("[{} ]","",paste(deparse(object$density)[-1],
@@ -394,34 +399,73 @@ AIC.moc <- function(object,...,k=2)
   nobslist<-sapply(mlist,function(tmp) tmp$nobs)
   nglist<-sapply(mlist,function(tmp) tmp$groups)
   if((k==0) && ((max(nglist)!=min(nglist)) || (max(nobslist)!=min(nobslist))))
-    warning("log Likelihood should only be used to compare nested models on the same observations with the same number of mixture.\nTry using AIC or BIC instead.\n") else
+    warning("log Likelihood should only be used to compare nested models on the same observations with the same number of mixture.\nTry using AIC or BIC or ICL-BIC instead.\n") else
   {if((k!="BIC") && (max(nobslist)!=min(nobslist)))
-    warning("AIC like statistics should not be used to compare models with differing number of observations, use BIC instead.\n")}
+    warning("AIC like statistics should not be used to compare models with differing number of observations, use BIC or ICL-BIC instead.\n")}
   cnames<-as.character(match.call()[-1])[1:ml]
   if(k=="BIC")
-  val<-as.data.frame(t(sapply(mlist,function(tmp) c(-2*tmp$loglikelihood+log(tmp$nobs)*sum(tmp$npar),tmp$nobs-sum(tmp$npar)))))
+  val<-as.data.frame(t(sapply(mlist,function(tmp) {bic<--2*tmp$loglikelihood+log(tmp$nobs)*sum(tmp$npar)
+                                                   po<-post(tmp); entropy<--sum(ifelse(po==0,0,po*log(po)))
+                                                     c(bic,entropy,bic+2*entropy,tmp$nobs-sum(tmp$npar))})))
   else
   val<-as.data.frame(t(sapply(mlist,function(tmp) c(-2*tmp$loglikelihood+k*sum(tmp$npar),tmp$nobs-sum(tmp$npar)))))
-  names(val)<-c(switch(as.character(k),"0"="-2*logLik","2"="AIC",BIC="BIC","generalized AIC"),"Df")
+  names(val)<-c(switch(as.character(k),"0"="-2*logLik","2"="AIC",BIC=c("BIC","Entropy","ICL-BIC"),"generalized AIC"),"Df")
   row.names(val)<-cnames                     
   val
 }
 
 logLik.moc <- function(object,...)
   {
+   if(class(object)!="moc") stop("\n\tObject must be of class moc\n")
     val <- object$loglikelihood
     attr(val,"nobs") <- object$nobs
     attr(val,"df") <- object$df
     class(val) <- "logLik"
     val
   }
-   
+
+
+obsfit.moc<-function(object,along=NULL,FUN=function(x) x)
+{
+  if(class(object)!="moc") stop("\n\tObject must be of class moc\n")
+  n<-object$nsubject
+  nt<-object$ntimes
+  ng<-object$groups
+  post.obj<-post.moc(object)
+  mpost<-by(post.obj,as.data.frame(along),mean,na.rm=TRUE)
+    fitted.mean<-by(FUN(object$expected(object$coef))*array(apply(post.obj,2,rep,nt),c(n,nt*ng)),
+                    as.data.frame(along),mean,na.rm=TRUE)
+  observed.mean<-by(array(apply(post.obj,2,"*",FUN(as.matrix(eval(object$resp)))),c(n,nt*ng)),as.data.frame(along),mean,na.rm=TRUE)
+  nlist<-dim(mpost)
+  for (i in 1:prod(nlist))
+    {
+  if(!is.null(fitted.mean[[i]]))
+    {
+      fitted.mean[[i]] <- t(array(fitted.mean[[i]],c(nt,ng)))
+      fitted.mean[[i]]<-(fitted.mean[[i]]/mpost[[i]])
+      dimnames(fitted.mean[[i]])<-list(paste("Group",1:ng,sep=""),
+                              ifelse(is.na(nchar(temp<-dimnames(eval(object$resp))[[2]])[1:nt]) ,paste("Time",1:nt,sep=""),temp))}
+ if(!is.null(observed.mean[[i]]))
+   {
+      observed.mean[[i]] <- t(array(observed.mean[[i]],c(nt,ng)))
+      observed.mean[[i]]<-(observed.mean[[i]]/mpost[[i]])
+     dimnames(observed.mean[[i]])<-list(paste("Group",1:ng,sep=""),
+                                ifelse(is.na(nchar(temp<-dimnames(eval(object$resp))[[2]])[1:nt]) ,paste("Time",1:nt,sep=""),temp))}
+  }
+
+   val<-list("Mean Posterior Probabilities"=mpost,
+             "Function"=substitute(FUN),
+             "Mean function Expected Values"=fitted.mean,
+             "Mean function Observed Values"=observed.mean)
+   val
+}
+
+
   
 ".First.lib"<-
 function(lib, pkg)
 {
-        cat("\n\tMOC library version 0.5-9\n")
-        cat("\tThis library is provided by Bernard Boulerice <Bernard.Boulerice@umontreal.ca>\n\n")
+       cat("\n",readLines(system.file("DESCRIPTION",package="moc")),sep="\n","\n")
         if (!exists('AIC',envir=.GlobalEnv)){
     eval(expression(AIC<-function(object,...,k=2) UseMethod('AIC')),envir=.GlobalEnv)} 
 }
