@@ -56,7 +56,7 @@
   Globally weighted residuals are preferable to detect influential
   data, wrong number of groups and differences between groups.
   Rescaled weight residuals are more useful when plotted against some
-  variables or time to detect misspecified regression function or profiles.
+  variables or variable index to detect misspecified regression function or profiles.
 }  
 
 \value{ \code{residuals.moc} returns an array of class

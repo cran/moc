@@ -45,11 +45,11 @@
  }
 
  \details{ \code{Obsfit.moc} will first compute the posterior probabilities
-   \deqn{\hat{\tau}_{i,k} = \frac{\hat{P}( G_i = k | z_i)
-   \hat{h}( y_i | G_i = k, x_i)}{\sum_k \hat{P}( G_i = k | z_i)
-   \hat{h}( y_i | G_i = k, x_i)}}{tau[i,k] = P( G[i] = k | z[i])
-   h( y[i] | G[i] = k, x[i]) /  \Sum_k (P( G[i] = k | z[i])
-   h( y[i] | G[i] = k, x[i]) )}
+   \deqn{\hat{\tau}_{i,k} = \frac{\hat{\pi}_k(z_i,x_i)
+   \hat{h}_k( y_i | x_i)}{\sum_k \hat{\pi}_k(z_i, x_i)
+   \hat{h}_k( y_i | x_i)}}{tau[i,k] = p_k( z[i], x[i])
+   h_k( y[i] | x[i]) /  \Sum_k (p_k(z[i], x[i])
+   h_k( y[i] | x[i]) )}
  using \code{post.moc} and then the weighted posterior mean probabilities
  \deqn{\hat{\bar{\tau}}_k = \frac{\sum_i wt_i\,\hat{\tau}_{i,k}}
    {\sum_i wt_i}}{\Sum_i (wt[i] * tau[i,k]) / \Sum_i wt[i]}

@@ -1,6 +1,6 @@
 % -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
 
-% Copyright (C) 2002-2003  Bernard Boulerice
+% Copyright (C) 2002-2004  Bernard Boulerice
 % This file is a template, you can use it without modification.
 % You don't have permission to modify it but you can modify
 % any copy of it as long as you rename the file and change
@@ -11,10 +11,10 @@
 % and other options:(there are defaults for every options except moc.name,
 % the defaults for author and email are intended to be useless)
 % moc.sweave <- list(moc.name=,main.title=,digits=,fit.lbl=,fit.names=,
-% width=,height=, scale=, group.colors=,xlab=,ylab=,prob.legend=)
+% scale=, group.colors=,xlab=,ylab=,prob.legend=)
 % The usual sequence of command to use it within R will look like this:
 % library(tools)
-% moc.sweave <- list(moc.name=quote(moc.name), author="your name", email="your email",
+% moc.sweave <- list(moc.name="moc.name", author="your name", email="your email",
 % main.title="moc.name",digits=5, ...)
 % Sweave(system.file("Sweave","moc.Rnw", package = "moc"))
 % system("latex moc.tex")    #may be run again to resolve references
@@ -23,33 +23,42 @@
 
 \documentclass[]{article}
 \usepackage[]{hyperref}
-\SweaveOpts{echo=F}
+
+
+\usepackage{Sweave}
+\SweaveOpts{echo=FALSE,width=6,height=6}
 
 \begin{document}
-
+\setkeys{Gin}{width=6in,height=6in}
 <<results=hide>>=
 .moc.sweave <-moc.sweave
+.moc.sweave$moc.name <- as.name(.moc.sweave$moc.name)                         # a mandatory string giving the name of the moc object to report
 if(!is.name(.moc.sweave$moc.name)||!exists(paste(.moc.sweave$moc.name)))
   stop("moc.sweave$moc.name must be a valid name")
-if(is.null(.moc.sweave$main.title)) .moc.sweave$main.title<-.moc.sweave$moc.name
+if(is.null(.moc.sweave$main.title)) .moc.sweave$main.title<-paste(.moc.sweave$moc.name)   # a string included in the LaTeX title
 if(is.null(.moc.sweave$author)) .moc.sweave$author<-"author ?"
 if(is.null(.moc.sweave$email)) .moc.sweave$email<-"email?"
-if(is.null(.moc.sweave$digits)) .moc.sweave$digits<-5
-if(is.null(.moc.sweave$fit.names)) .moc.sweave$fit.names<-NULL
-if(is.null(.moc.sweave$fit.lbl)) .moc.sweave$fit.lbl<-paste(c(.moc.sweave$moc.name,.moc.sweave$fit.names))
-if(is.null(.moc.sweave$width)) .moc.sweave$width<-"6in"
-if(is.null(.moc.sweave$height)) .moc.sweave$height<-"6in"
-if(is.null(.moc.sweave$scale)) .moc.sweave$scale<-FALSE
-if(is.null(.moc.sweave$group.colors)) .moc.sweave$group.colors<-rainbow(eval(.moc.sweave$moc.name)$groups)
-if(is.null(.moc.sweave$xlab)) .moc.sweave$xlab<-""
-if(is.null(.moc.sweave$ylab)) .moc.sweave$ylab<-""
-if(is.null(.moc.sweave$prob.legend)) .moc.sweave$prob.legend<-FALSE
-
+if(is.null(.moc.sweave$digits)) .moc.sweave$digits<-5                         # passed to the format command
+if(is.null(.moc.sweave$fit.names)) .moc.sweave$fit.names<-NULL                # other moc objects to include in the fit table
+if(is.null(.moc.sweave$fit.lbl)) .moc.sweave$fit.lbl<-paste(c(paste(.moc.sweave$moc.name),.moc.sweave$fit.names)) # labels to all the models in the fit table
+if(is.null(.moc.sweave$obsfit.along)) {.moc.sweave$obsfit.along <- ""} else 
+{ .moc.sweave$obsfit.along <- as.name(.moc.sweave$obsfit.along)}              # string giving the name of the along argument of obsfit.moc
+if(is.null(.moc.sweave$obsfit.fbox)) .moc.sweave$obsfit.fbox<-"\\fbox"        # argument fbox of TeXObsfitMeanTable.moc and TeXObsfitMixPTable.moc
+if(is.null(.moc.sweave$scale)) .moc.sweave$scale<-FALSE                       # argument scale of plot.moc and profilesplot.moc
+if(is.null(.moc.sweave$group.colors)) .moc.sweave$group.colors<-rainbow(eval(.moc.sweave$moc.name)$groups) # groups colors to use in all plots
+if(is.null(.moc.sweave$xlab)) .moc.sweave$xlab<-""                            # x label in plot.moc and profilesplot.moc
+if(is.null(.moc.sweave$ylab)) .moc.sweave$ylab<-""                            # y label in plot.moc and profilesplot.moc
+if(is.null(.moc.sweave$prob.legend)) .moc.sweave$prob.legend<-FALSE           # corresponding argument in plot.moc and profilesplot.moc
+if(is.null(.moc.sweave$model.name)) .moc.sweave$model.name<-""                # a latex string giving a name to the model 
+if(is.null(.moc.sweave$model.description)) .moc.sweave$model.description<-""  
+                                        # a latex string giving a description of the model 
+                                        # that is going to be inserted between data description and
+                                        # estimates table (use \\ to have \ in the final LaTeX file).
+                                        # for example moc.sweave$model.description<-"\\input{mocinput.tex}" will include
+                                        # the file mocinput.tex which should be a normal LaTeX file (single \).
 @
-\title{\href{mailto:Bernard.Boulerice@umontreal.ca}{MOC} Mixtures: Report on \Sexpr{noquote(.moc.sweave$main.title)} model}
-\author{\href{mailto:\Sexpr{noquote(.moc.sweave$email)}}{\Sexpr{noquote(.moc.sweave$author)}}}
-
-\setkeys{Gin}{width=\Sexpr{noquote(.moc.sweave$width)},height=\Sexpr{noquote(.moc.sweave$height)}}
+\title{\href{mailto:Bernard.Boulerice@umontreal.ca}{MOC} Mixtures: Report on \Sexpr{noquote(.moc.sweave$main.title)} model} 
+\author{\href{mailto:\Sexpr{noquote(.moc.sweave$email)}}{\Sexpr{noquote(.moc.sweave$author)}}} 
 
 \maketitle
 
@@ -61,20 +70,32 @@ if(is.null(.moc.sweave$prob.legend)) .moc.sweave$prob.legend<-FALSE
 
 <<results=hide>>=
 library("moc")
-source(system.file("Sweave","moc_sweave.R", package = "moc"))
+source(system.file("Sweave","moc_sweave.R", package = "moc"),local=TRUE)
+if(.moc.sweave$obsfit.along != "") {
+  obsfit.table <- eval(parse(text=paste("obsfit.moc(",.moc.sweave$moc.name,",along=",.moc.sweave$obsfit.along,")")))
+} else {
+  obsfit.table <- obsfit.moc(eval(.moc.sweave$moc.name))
+}
 
 @
 The likelihood of mixture models fitted by the \emph{MOC}
 package has the general form
-$$\prod_if( Y_i = y_i |\, Z_i = z_i, X_i = x_i)  = 
-\prod_i \Bigl{(}\sum_k P( G_i = k |\, z_i) \,h( y_i |\, G_i = k, x_i)\Bigr{)}$$
-The following table shows the maximum likelihood parameter estimates of a
- $\Sexpr{eval(.moc.sweave$moc.name)$groups}$
-groups mixture model with $\Sexpr{sum(eval(.moc.sweave$moc.name)$npar)}$
-parameters fitted to $\Sexpr{sum(eval(.moc.sweave$moc.name)$nsubject)}$ 
-subjects with $\Sexpr{sum(eval(.moc.sweave$moc.name)$ntimes)}$ variables each.
-There are currently $\Sexpr{sum(is.na(eval(eval(.moc.sweave$moc.name)$resp)))}$
-missing values in the data.
+$$\prod_i f( Y_i = y_i |\, Z_i = z_i, X_i = x_i)  = 
+\prod_i \Bigl{(}\sum_k \pi_k(z_i,x_i) \,h_k( y_i\, |\, x_i)\Bigr{)}.$$
+
+A \Sexpr{eval(.moc.sweave$moc.name)$groups} groups \Sexpr{noquote(.moc.sweave$model.name)}
+mixture model was fitted to \Sexpr{sum(eval(.moc.sweave$moc.name)$nsubject)} 
+subjects with \Sexpr{sum(eval(.moc.sweave$moc.name)$nvar)} observations each.
+There are currently \Sexpr{noquote(paste(apply(cbind(is.na(eval(eval(.moc.sweave$moc.name)$resp))),2,sum),collapse=', '))}
+missing values in the respective observation.
+
+<<results=tex>>=
+cat(.moc.sweave$model.description,"\n")
+
+@
+
+The following table shows the maximum likelihood estimates of the
+\Sexpr{sum(eval(.moc.sweave$moc.name)$npar)} parameters in the model.
 
 %\begin{table}[h]
 %\caption{Maximum likelihood estimates}
@@ -84,7 +105,8 @@ missing values in the data.
 <<results=tex>>=
 TeXCoefTable.moc(eval(.moc.sweave$moc.name),digits=.moc.sweave$digits)
 
-@ 
+@
+ 
 \end{center}
 %\end{table}
 
@@ -98,9 +120,10 @@ posterior probabilities.
 \begin{center}
 
 <<results=tex>>=
-TeXMixPTable.moc(eval(.moc.sweave$moc.name),digits=.moc.sweave$digits,lbl="Probabilities")
+TeXObsfitMixPTable.moc(obsfit.table,digits=.moc.sweave$digits,lbl="Probabilities",fbox=.moc.sweave$obsfit.fbox)
 
-@ 
+@
+ 
 \end{center}
 %\end{table}
 
@@ -112,21 +135,23 @@ while individual profiles are shown in figure \ref{fig:subjprof} .
 %\label{tab:obsfit}
 \begin{center}
 <<results=tex>>=
-TeXMeanTable.moc(eval(.moc.sweave$moc.name),digits=.moc.sweave$digits)
+TeXObsfitMeanTable.moc(obsfit.table,digits=.moc.sweave$digits,fbox=.moc.sweave$obsfit.fbox)
 
 @ 
+
 \end{center}
 %\end{table}
 
 \begin{figure}[f]
-  \begin{center}
+\begin{center}
 
 <<fig=TRUE>>=
 plot(eval(.moc.sweave$moc.name),main="",prob.legend=.moc.sweave$prob.legend,
 xlab=.moc.sweave$xlab,ylab=.moc.sweave$ylab,scale=.moc.sweave$scale,
 group.colors=.moc.sweave$group.colors)
 
-@ 
+@
+ 
 \caption{Posterior mean fitted and observed values}
 \label{fig:profiles}
 \end{center}
@@ -140,7 +165,8 @@ profilesplot(eval(.moc.sweave$moc.name),main="",col.legend=.moc.sweave$prob.lege
 xlab=.moc.sweave$xlab,ylab=.moc.sweave$ylab,scale=.moc.sweave$scale,
 group.colors=.moc.sweave$group.colors)
 
-@ 
+@
+ 
 \caption{Observed subject profiles}
 \label{fig:subjprof}
 \end{center}
@@ -154,12 +180,13 @@ pairs(post(eval(.moc.sweave$moc.name)),col=mix.colors.moc(eval(.moc.sweave$moc.n
 group.colors=.moc.sweave$group.colors),upper.panel=NULL)
 
 @
+
 \caption{Subjects posterior probabilities}
 \label{fig:postprob}
 \end{center}
 \end{figure}
 
-	      
+              
 \section{Model Fit}
 The following table gives information theory criterions to evaluate
 the fit of the model. The entropy of the model is an index of mixture
@@ -174,11 +201,12 @@ be found in \cite{MP:2000}.
 
 <<results=tex>>=
 eval(parse(text=paste(
-"TeXFitTable.moc(",paste("eval(",c(.moc.sweave$moc.name,.moc.sweave$fit.names),collapse="),"),"),",
-"lbl=c(\"",paste(.moc.sweave$fit.lbl,collapse="\",\""),"\"),digits=",.moc.sweave$digits,")")))
+"TeXFitTable.moc(",deparse(c(paste(.moc.sweave$moc.name),.moc.sweave$fit.names)),",",
+"lbl=",deparse(.moc.sweave$fit.lbl),",digits=",.moc.sweave$digits,")")))
 rm(.moc.sweave)
 
 @
+
 \end{center}
 %\end{table}
 

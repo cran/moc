@@ -1,6 +1,84 @@
-Changes in MOC 0.8-2
+Changes in MOC 0.8-4
 ======================
 
+Bugs Fixes:
+-----------
+   (see the fixes in version 0-8.3)
+
+New Features:
+-------------
+
+   The variable ntimes in the moc object list have been changed
+   to nvar.
+
+   An attribute "moc.name" have been added to most moc methods that
+   return a value. This attribute contains the name of the moc object
+   with which the method was applied.
+
+   obsfit.moc now directly returns its value without print and
+   invisible. The attributes moc.name, FUN and along are added and
+   the list also includes the "Mean Prior Probabilities".
+   profilesplot.moc now include an option 'type' which allow to plot
+   subject , variables and posterior probabilities profiles.
+
+   A generic method entropy with entropy.default and entropy.moc
+   methods that computes the entropy of a set of probabilities have
+   been added.
+
+   Plotting generic method entropyplot with entropyplot.moc have been
+   added to make an entropy graph.
+
+   Most plotting functions now use a default main title, use main=""
+   to prevent printing of a main title.
+
+
+
+Changes in MOC 0.8-3
+======================
+
+Bugs Fixes:
+-----------
+
+   print.moc now reports the weighted mean of the prior mixture probabilities.
+
+   The first check on the validity of the mixture components
+   probablilities returned by gmixture now generates a warning instead
+   of an error.
+
+New Features:
+-------------
+
+   The first and final checks on the sum of the mixture probabilities
+   of gmixture are now made within machine precision (|sum-1| >
+   .Machine$double.eps^0.5).
+
+   The returned values of moc now includes the posterior probabilities
+   in the element post.prob and the method post.moc simply extract
+   this value if it exists or computes it as before when it is not
+   present in the moc object.
+
+   print.moc now reports the non-null functions names and uses a better
+   formatting of the coefficient table.
+
+   The argument group.colors have been added to plot.residuals.moc
+
+   Two new functions have been added in Sweave/moc_sweave.R to create
+   latex tables of obsfit.moc values namely TeXObsfitMixPTable.moc and
+   TeXObsfitMeanTable.moc.
+
+   The functions to create latex tables in the file
+   Sweave/moc_sweave.R now all pass the argument `...` to cat so it is
+   possiblle to use file="any connection" and other `cat`
+   arguments. An align="default" argument have been added to the
+   functions which value is passed to the tabular LaTeX command. 
+
+   The function TeXListTable.moc in Sweave/moc_sweave.R uses
+   concatenated tabular environments and seems more usable.
+
+
+
+Changes in MOC 0.8-2
+======================
 
 Bugs Fixes:
 -----------
@@ -25,7 +103,6 @@ New Features:
 
 Changes in MOC 0.8-1
 ======================
-
 
 Bugs Fixes:
 -----------
@@ -54,10 +131,8 @@ New Features:
 
 
 
-
 Changes in MOC 0.8
 ======================
-
 
 Bugs Fixes:
 -----------

@@ -1,7 +1,8 @@
+.packageName <- "moc"
 #
-#  moc : Function to fit general multivariate mixture models 
+#  moc : Library to fit general multivariate mixture models 
 #         
-#  Copyright (C) 2000-2003 Bernard Boulerice
+#  Copyright (C) 2000-2004 Bernard Boulerice
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public Licence as published by
@@ -82,6 +83,7 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
   .gextra<-list()
   .expected<-list()  
   for( ig in 1:ng) {
+                                        # check gmu
     if(length(dim(gmu[[ig]](pgmu)))!=2 || dim(gmu[[ig]](pgmu))[2]!=nt) 
       stop(paste("\ngmu in group",ig,"must return a matrix with vectors of length nvar = ",nt))
     if(any(is.na(gmu[[ig]](pgmu)))) stop(paste("\nThe gmu function returns NAs in group ",ig))
@@ -94,6 +96,8 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
     } else
     if(dim(gmu[[ig]](pgmu))[1]==n) .gmu[[ig]]<-gmu[[ig]] else
     stop(paste("\ngmu in group",ig,"should return a matrix of length 1 or ",n))
+                                        #
+                                        # check gshape
                                         #
     if(is.null(gshape) && is.null(pgshape)) .gshape[[ig]]<- function(...) 1 else
     {
@@ -111,6 +115,8 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
       if(dim(gshape[[ig]](pgshape))[1]==n ) .gshape[[ig]]<-gshape[[ig]] else
       stop("\ngshape in group",ig,"should return a matrix of length 1 or",n)
     }
+                                        #
+                                        # check gextra
                                         #
     if(is.null(gextra) && is.null(pgextra)) .gextra[[ig]]<- function(...) 1 else
     {
@@ -137,7 +143,10 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
                                list(k=ig,gmu=.gmu,npl=npl))
       } else
     {
-      ptot <- c(pgmu,pgshape,pgextra) 
+      ptot <- c(pgmu,pgshape,pgextra)
+                                        #
+                                        # check expected
+                                        #
       if(length(dim(expected[[ig]](ptot)))!=2 || dim(expected[[ig]](ptot))[2]!=nt) 
         stop(paste("\nexpected in group",ig,"must return a matrix with vectors of length nvar =",nt))
       if(any(is.na(expected[[ig]](ptot)))) stop(paste("\nThe expected function returns NAs",ig))
@@ -155,13 +164,15 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
       
   }
                                         #
-  if(is.null(gmixture) && is.null(pgmix)) { .gmixture<-function(...) 1 } else
+                                        # check the returned values of the mixture function
+                                        #
+   if(is.null(gmixture) && is.null(pgmix)) { .gmixture<-function(...) 1 } else
   {
     if(dim(gmixture(pgmix))[2]!=ng)
       stop(paste("\ngmixture must return a matrix with vectors of length groups=",ng))
     if(any(is.na(gmixture(pgmix)))) stop("\nThe mixture function returns NAs")
-    if(any(gmixture(pgmix)<0)||any(apply(gmixture(pgmix),1,sum)!=1)) 
-      stop("\nThe mixture function components must be >=0 and sum to 1")
+    if(any(gmixture(pgmix)<0)||any(abs(apply(gmixture(pgmix),1,sum)-1)>.Machine$double.eps^0.5))
+      warning("\nThe mixture function components probabilities must be >=0 and sum to 1")
     if(dim(gmixture(pgmix))[1]==1 ) {
       fcall<-paste(deparse(gmixture)[1],collapse="")
       fbody<-paste(deparse(gmixture)[-1],collapse="\n")
@@ -185,7 +196,7 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
     wt<-wt/mean(wt)
   }
                                         #
-                                        #define the likelihood functions
+                                        # define the likelihood functions
                                         #
 
   loglike<-if(joint){
@@ -243,21 +254,22 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
   { post1<- sapply(1:ng,function(ind)
                   apply(.density(resp,.gmu[[ind]](parm$mu),.gshape[[ind]](parm$shape),
                                  .gextra[[ind]](parm$extra)),1,prod,na.rm=TRUE))*pmix }
-  post1<-post1/apply(post1,1,sum)*wt
+  post1<-post1/apply(post1,1,sum)
+  dimnames(post1)<-list(NULL,paste("Group",1:ng,sep=""))
                                         #
-                                        # compute fitted and obserserved values 
+                                        # compute posterior prob., fitted and obserserved values 
                                         #
-  mpost<-apply(post1,2,mean)
+  mpost<-apply(post1*wt,2,mean)
   fitted.mean<-matrix(t(sapply(1:ng,function(ind)
-                        apply(.expected[[ind]](z0$estimate)*post1[,ind],2,mean,na.rm=TRUE)))/mpost,ng,nt)
-  mpost<-sapply(1:ng,function(ind) apply(post1[,ind]*ifelse(is.na(resp),NA,1),2,mean,na.rm=TRUE))
-  observed.mean<-matrix(t(sapply(1:ng,function(ind) apply(post1[,ind]*resp,2,mean,na.rm=TRUE))/mpost),ng,nt)
+                        apply(.expected[[ind]](z0$estimate)*post1[,ind]*wt,2,mean,na.rm=TRUE)))/mpost,ng,nt)
+  mpost<-sapply(1:ng,function(ind) apply(post1[,ind]*wt*ifelse(is.na(resp),NA,1),2,mean,na.rm=TRUE))
+  observed.mean<-matrix(t(sapply(1:ng,function(ind) apply(post1[,ind]*wt*resp,2,mean,na.rm=TRUE))/mpost),ng,nt)
   dimnames(fitted.mean)<-list(paste("Group",1:ng,sep=""),
                               ifelse(is.na(nchar(temp<-dimnames(resp)[[2]])[1:nt]) ,
-                                     paste("Time",1:nt,sep=""),temp))
+                                     paste("V",1:nt,sep=""),temp))
   dimnames(observed.mean)<-list(paste("Group",1:ng,sep=""),
                                 ifelse(is.na(nchar(temp<-dimnames(resp)[[2]])[1:nt]) ,
-                                       paste("Time",1:nt,sep=""),temp))
+                                       paste("V",1:nt,sep=""),temp))
                                         #
                                         # clean functions environment and
                                         # makes the weights callable
@@ -288,7 +300,7 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
     if(scale.weight) {wt<-substitute(as.vector(a)/mean(as.vector(a)),list(a=wt)) } else
     wt<-substitute(as.vector(a),list(a=wt))
   }
-     if(any(.gmixture(parm$mix)<0)||any(apply(rbind(.gmixture(parm$mix)),1,sum)!=1)) 
+     if(any(.gmixture(parm$mix)<0)||any(abs(apply(rbind(.gmixture(parm$mix)),1,sum)-1)>.Machine$double.eps^0.5)) 
       warning("\nThe final mixture probablities are not all >=0 or don't sum to 1.\n")
  
                                         #
@@ -301,7 +313,7 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
                   density=.density,
                   joint=joint,
                   nsubject=n,
-                  ntimes=nt,
+                  nvar=nt,
                   nobs=sum(!is.na(resp)),
                   groups=ng,
                   npar=c(npl,nps,npext,npmix),
@@ -311,6 +323,7 @@ moc<- function(y, density=NULL, joint=FALSE, groups=1,
                   gmixture=.gmixture,
                   expected = .expected,
                   prior.weights=wt,
+                  post.prob=post1,
                   loglikelihood=-z0$minimum,
                   df=n*nt-np,
                   AIC=2*z0$minimum+2*np,
@@ -332,6 +345,8 @@ post<-function(object,...) UseMethod("post")
 post.moc<-function(object,...)
 {
   if(!inherits(object,"moc")) stop("\n\tObject must be of class moc\n")
+  if(!is.null(object$post.prob)) {return(invisible(object$post.prob))} else
+  {
   if(!is.null(eval(object$data)))
     {
       attach(eval(object$data),name=deparse(object$data),pos=2)
@@ -350,9 +365,15 @@ post.moc<-function(object,...)
                   apply(object$density(as.matrix(eval(object$resp)),object$gmu[[ind]](parm$mu),
                                        object$gshape[[ind]](parm$shape),object$gextra[[ind]](parm$extra)),
                         1,prod,na.rm=TRUE))*mix}
-    dimnames(post1)<-list(NULL,paste("Group",1:object$groups,sep=""))
-    invisible(post1/apply(post1,1,sum))
+    dimnames(post1)<-list(paste("Group",1:object$groups,sep=""))
+    post1 <- post1/apply(post1,1,sum)
+    obj.name <- paste(substitute(object))
+    object$post.prob <- post1
+    eval(substitute(assign(obj.name,object,pos=sys.frame())))
+    attr(post1,"moc.name") <- deparse(substitute(object))
+    invisible(post1)
   }
+}
 }
 
 fitted.moc<-function(object,...)
@@ -361,12 +382,13 @@ fitted.moc<-function(object,...)
   if(!is.null(eval(object$data))){ attach(eval(object$data),name=deparse(object$data),pos=2);
                                    on.exit(detach(2),add=TRUE)}
   n<-object$nsubject
-  dim1<-c(n,object$ntimes,object$groups)
+  dim1<-c(n,object$nvar,object$groups)
   fit<-array(NA,dim=dim1)
   for(ig in 1:object$groups) fit[,,ig]<-object$expected[[ig]](object$coefficients)
   dimnames(fit)<-list(NULL,
                       ifelse(is.na(nchar(temp<-dimnames(eval(object$resp))[[2]])[1:dim1[2]]),
-                             paste("Time",1:dim1[2],sep=""),temp),paste("Group",1:dim1[3],sep=""))
+                             paste("V",1:dim1[2],sep=""),temp),paste("Group",1:dim1[3],sep=""))
+  attr(fit,"moc.name") <- deparse(substitute(object))
   invisible(fit)
 }
 
@@ -379,7 +401,7 @@ residuals.moc<-function(object,...,type="deviance",post.weight=TRUE,within=FALSE
   choices<-c("deviance","response")
   type<-match.arg(type,choices)
   n<-object$nsubject
-  nt<-object$ntimes
+  nt<-object$nvar
   ng<-object$groups
   dim1<-c(n,nt,ng)
   parm<-split(object$coefficients,rep(c("mu","shape","extra","mix"),object$npar))
@@ -403,12 +425,13 @@ residuals.moc<-function(object,...,type="deviance",post.weight=TRUE,within=FALSE
 
   dimnames(res)<-list(NULL,
                       ifelse(is.na(nchar(temp<-dimnames(eval(object$resp))[[2]])[1:dim1[2]]),
-                             paste("Time",1:dim1[2],sep=""),temp),paste("Group",1:dim1[3],sep=""))
+                             paste("V",1:dim1[2],sep=""),temp),paste("Group",1:dim1[3],sep=""))
   if(post.weight) res<-res*array(wpost[,rep(1:ng,rep(nt,ng))],dim=dim1)
   class(res)<-c("residuals.moc","residuals")
   attr(res,"type")<-type
   attr(res,"post.weight")<-post.weight
   attr(res,"within")<-within
+  attr(res,"moc.name") <- deparse(substitute(object))
   invisible(res)
 }
 
@@ -421,68 +444,70 @@ print.moc<-function(x,digits=5,...)
     attach(eval(object$data),name=deparse(object$data),pos=2)
     on.exit(detach(2),add=TRUE)}
 
-  cat("\n\t\t",object$groups,"Mixture of Curves\n\n\n")
-  cat("Response is ",deparse(object$resp),"\n\n")
+  cat("\n\t\t",object$groups,"mixtures MOC model\n\n\n")
+  cat("Response: ",deparse(object$resp),"\n\n")
   if(object$joint) cat("joint ")
-  cat("Density:\n");print(object$density)
-  cat("\nLocation:\n");print(object$gmu )
-  cat("\nExpectation:\n");print(object$expected )
-  cat("\nShape:\n");print(object$gshape)
-  cat("\nExtra parameter:\n");print(object$gextra)
-  cat("\nMixture:\n");print(object$gmixture)
+  cat("Density: ");cat(deparse(object$call$density),"\n");print(object$density)
+  if(!is.null(object$call$gmu)) {cat("\nLocation: ");cat(deparse(object$call$gmu),"\n");print.listof(object$gmu )}
+  if(!is.null(object$call$expected)) {cat("\nExpectation: ");cat(deparse(object$call$expected),"\n");print.listof(object$expected )}
+  if(!is.null(object$call$gshape)) {cat("\nShape: ");cat(deparse(object$call$gshape),"\n");print.listof(object$gshape)}
+  if(!is.null(object$call$gextra)) {cat("\nExtra parameter: ");cat(deparse(object$call$gextra),"\n");print.listof(object$gextra)}
+  cat("\nMixture: ")
+  if(!is.null(object$call$gmixture)) {cat(deparse(object$call$gmixture),"\n")} else {cat("inv.glogit\n")}
+  print(object$gmixture)  
   cat("\n\n\t\t\tMaximum Likelihood Estimates\n\n")
-  if(object$code>2) {cat("\n\nWARNING - CONVERGENCE NOT ACHIEVED - ERROR",object$code,"\n\n\n")}
   cat(formatC(c("",""," Standard","Wald Chi-Sq:"),width=13),"\n")
   cat(formatC(c("Parameter    ","Estimate"," Error"," Param = 0"," Prob > Wald"),width=13),"\n")
-  object.se<-sqrt(diag(object$cov))
+  object.coef<-split(object$coef,rep(c("mu","shape","extra","mix"),object$npar))
+  object.se<-split(sqrt(diag(object$cov)),rep(c("mu","shape","extra","mix"),object$npar))
   nl<-object$npar[1];ns<-object$npar[2];nextra<-object$npar[3];nm<-object$npar[4]
-  if(object$npar[1]>0)
+  if(nl>0)
     {
       cat("\nLocation:\n\n")
       param<-attr(object$gmu,"parameters")
       if (length(param) != nl) param<-"             "
-      coeftable<-matrix(cbind(est<-object$coef[1:nl],se<-object.se[1:nl],w<-(est/se)^2,
+      coeftable<-matrix(cbind(est<-object.coef$mu,se<-object.se$mu,w<-(est/se)^2,
                               (1-pchisq(w,1))),nl,4)
-      coeftable<-matrix(apply(coeftable,2,formatC,digits=digits,width=13),nl,4)
+      coeftable<-formatC(matrix(apply(coeftable,2,format,digits=digits,width=13),nl,4),width=13)
       cat(paste(formatC(param,width=-13),apply(coeftable,1,paste,collapse=" "),collapse="\n"),"\n")
       object$Location<-coeftable
     }
-  if(object$npar[2]>0)
+  if(ns>0)
     {
       cat("\nShape:\n\n")
       param<-attr(object$gshape,"parameters")
       if (length(param) != ns) param<-"             "
-      coeftable<-matrix(cbind(est<-object$coef[(nl+1):(nl+ns)],se<-object.se[(nl+1):(nl+ns)],
+      coeftable<-matrix(cbind(est<-object.coef$shape,se<-object.se$shape,
                               w<-(est/se)^2,(1-pchisq(w,1))),ns,4)
-      coeftable<-matrix(apply(coeftable,2,formatC,digits=digits,width=13),ns,4)
+      coeftable<-formatC(matrix(apply(coeftable,2,format,digits=digits,width=13),ns,4),width=13)
       cat(paste(formatC(param,width=-13),apply(coeftable,1,paste,collapse=" "),collapse="\n"),"\n")
       object$Shape<-coeftable
     }
-  if(object$npar[3]>0)
+  if(nextra>0)
     {
       cat("\nExtra Parameters:\n\n")
       param<-attr(object$gextra,"parameters")
       if (length(param) != nextra) param<-"             "
-      coeftable<-matrix(cbind(est<-object$coef[(nl+ns+1):(nl+ns+nextra)],
-                              se<-object.se[(nl+ns+1):(nl+ns+nextra)],w<-(est/se)^2,
+      coeftable<-matrix(cbind(est<-object.coef$extra,
+                              se<-object.se$extra,w<-(est/se)^2,
                               (1-pchisq(w,1))),nextra,4)
-      coeftable<-matrix(apply(coeftable,2,formatC,digits=digits,width=13),nextra,4)
+      coeftable<-formatC(matrix(apply(coeftable,2,format,digits=digits,width=13),nextra,4),width=13)
       cat(paste(formatC(param,width=-13),apply(coeftable,1,paste,collapse=" "),collapse="\n"),"\n")
       object$Extra<-coeftable
     }
-  if(object$npar[4]>0)
+  if(nm>0)
     {
       cat("\nMixture:\n\n")
       param<-attr(object$gmixture,"parameters")
       if (length(param) != nm) param<-"             "
-      coeftable<-matrix(cbind(est<-object$coef[(nl+ns+nextra+1):(nl+ns+nextra+nm)],
-                              se<-object.se[(nl+ns+nextra+1):(nl+ns+nextra+nm)],
+      coeftable<-matrix(cbind(est<-object.coef$mix,
+                              se<-object.se$mix,
                               w<-(est/se)^2,(1-pchisq(w,1))),nm,4)
-      coeftable<-matrix(apply(coeftable,2,formatC,digits=digits,width=13),nm,4)
+      coeftable<-formatC(matrix(apply(coeftable,2,format,digits=digits,width=13),nm,4),width=13)
       cat(paste(formatC(param,width=-13),apply(coeftable,1,paste,collapse=" "),collapse="\n"),"\n")
       object$Mixture<-coeftable
       cat("\nMean Mixture Probabilities:\n")
-      mmix<-apply(object$gmixture(est),2,mean)
+      mmix<-apply(object$gmixture(est),2,weighted.mean,eval(object$prior.weights),na.rm=TRUE)
       names(mmix)<-paste("Group",1:object$groups,sep="")
       print(mmix,digits=5)
       object$MixtProb<-coeftable
@@ -494,6 +519,7 @@ print.moc<-function(x,digits=5,...)
   object$ModelFit<-modelfit
   coeftable<-apply(post.moc(object),2,weighted.mean,eval(object$prior.weights),na.rm=TRUE)
   object$PostMixtProb<-coeftable
+  if(object$code>2) {cat("\n\nWARNING - CONVERGENCE NOT ACHIEVED - ERROR",object$code,"\n\n\n")}
   if(object$groups>1) {cat("\n\nMean Posterior Mixture Probabilities:\n")
   print(coeftable,digits=5)}
   cat("\n")
@@ -535,31 +561,77 @@ AIC.moc <- function(object,...,k=2)
   val
 }
 
+entropy <- function(object,...) UseMethod("entropy")
+
+entropy.default <- function(object,...)
+  {
+    obj2 <- as.matrix(object)
+    if(!all((obj2 >= 0) & (obj2 <= 1)) || any(abs(apply(obj2,1,sum)-1) > .Machine$double.eps^0.5))
+      stop("The probabilities must lies in [0,1] ans sum to 1 ")
+    en <- apply(obj2,1,function(pro) -sum(ifelse(pro==0,0,pro*log(pro))))
+    en <- cbind(en,en/log(dim(obj2)[2]))
+    dimnames(en) <-  list(dimnames(obj2)[[1]],c("entropy","std.entropy"))
+    return(en)
+  }
+                                          
+
+entropy.moc <- function(object,...) 
+{
+  mlist<-  list(object,...)
+  if(!all(sapply(mlist,inherits,"moc"))) stop("\n\tAll objects must be of class moc\n")
+  ml<-length(mlist)
+  cnames<-as.character(match.call()[-1])
+  names(mlist)<- cnames[1:ml]
+    val<-as.data.frame(t(sapply(mlist,function(tmp){
+      attach(eval(tmp$data),name=deparse(tmp$data),pos=2)
+      on.exit(detach(2),add=TRUE)
+      parm<-split(tmp$coef,rep(c("mu","shape","extra","mix"),tmp$npar)) 
+      pri <- tmp$gmixture(parm$mix)
+      po<-post.moc(tmp)
+      pri.entropy<--sum(ifelse(pri==0,0,eval(tmp$prior.weight)*pri*log(pri)))
+      post.entropy<--sum(ifelse(po==0,0,eval(tmp$prior.weight)*po*log(po)))
+      c(tmp$groups,pri.entropy,post.entropy,
+        pri.entropy/log(tmp$groups)/sum(eval(tmp$prior.weight)),post.entropy/log(tmp$groups)/sum(eval(tmp$prior.weight)),
+        1-post.entropy/pri.entropy)}))) 
+  names(val)<-c("Groups","Total Prior Entropy","Total Posterior Entropy",
+                "Mean Prior Standardized Entropy","Mean Posterior Standardized Entropy",
+                "% Reduction")
+  row.names(val)<-cnames[1:ml]                     
+  val
+}
+
+
 logLik.moc <- function(object,...)
 {
   if(!inherits(object,"moc")) stop("\n\tObject must be of class moc\n")
   val <- object$loglikelihood
   attr(val,"df") <- object$df
-  attr(val,"nobs")<-object$ntimes*object$nsubject
+  attr(val,"nobs")<-object$nvar*object$nsubject
   class(val) <- "logLik"
+  attr(val,"moc.name") <- deparse(substitute(object))
   val
 }
 
 
-obsfit.moc<-function(object,along=NULL,FUN=function(x) x)
+obsfit.moc<-function(object,along=list(cons=rep(1,object$nsubject)),FUN=function(x) x)
 {
   if(!inherits(object,"moc")) stop("\n\tObject must be of class moc\n")
   if(!is.null(eval(object$data))){
     attach(eval(object$data),name=deparse(object$data),pos=2)
     on.exit(detach(2),add=TRUE)}
+  along.name <- substitute(along)
+  if(!is.list(along)) eval(parse(text=paste("along <-list(",substitute(along),"=along)")))
   n<-object$nsubject
-  if(is.null(along)) along<-rep(1,n)
-  nt<-object$ntimes
+  nt<-object$nvar
   ng<-object$groups
+  parm<-split(object$coef,rep(c("mu","shape","extra","mix"),object$npar))
   wts<-eval(object$prior.weight)
   post.obj<-post.moc(object)*wts
   mpost<-by(post.obj,along,mean,na.rm=TRUE)
   wts<-by(wts,along,mean)
+  tmp <- object$gmixture(parm$mix)
+  dimnames(tmp) <- list(NULL,paste("Group",1:object$groups,sep=""))
+  gmix.mean <-by(tmp,along,mean)
   tmp<-matrix(NA,n,nt*ng)
   for (ig in 1:object$groups) tmp[,(1:nt)+(ig-1)*nt]<-FUN(object$expected[[ig]](object$coef))
   fitted.mean<-by(tmp*array(apply(post.obj,2,rep,nt),c(n,nt*ng)), along,mean,na.rm=TRUE)
@@ -577,7 +649,7 @@ obsfit.moc<-function(object,along=NULL,FUN=function(x) x)
         dimnames(fitted.mean[[i]])<-
           list(paste("Group",1:ng,sep=""),
                ifelse(is.na(nchar(temp<-dimnames(eval(object$resp))[[2]])[1:nt]) ,
-                      paste("Time",1:nt,sep=""),temp))
+                      paste("V",1:nt,sep=""),temp))
       }
       if(!is.null(observed.mean[[i]]))
         {
@@ -585,20 +657,20 @@ obsfit.moc<-function(object,along=NULL,FUN=function(x) x)
           dimnames(observed.mean[[i]])<-
             list(paste("Group",1:ng,sep=""),
                  ifelse(is.na(nchar(temp<-dimnames(eval(object$resp))[[2]])[1:nt]) ,
-                        paste("Time",1:nt,sep=""),temp))
+                        paste("V",1:nt,sep=""),temp))
         }
+      gmix.mean[[i]]<-gmix.mean[[i]]/wts[[i]]
     }
 
-  val<-list("Mean Posterior Probabilities"=mpost,
-            "Function"=substitute(FUN),
+  val<-list("Mean Prior Probabilities"=gmix.mean,
             "Mean function Expected Values"=fitted.mean,
-            "Mean function Observed Values"=observed.mean)
-  print(val)
-  invisible(val)
+            "Mean function Observed Values"=observed.mean,
+            "Mean Posterior Probabilities"=mpost)
+  structure(val,moc.name=deparse(substitute(object)),FUN=substitute(FUN),along=deparse(along.name))
 }
 
 
-plot.moc<-function(x,against=1:x$ntimes,main="",xlab="",ylab="",prob.legend=TRUE,scale=FALSE,group.colors=rainbow(x$groups),...)
+plot.moc<-function(x,against=1:x$nvar,main=paste(substitute(x)),xlab="",ylab="",prob.legend=TRUE,scale=FALSE,group.colors=rainbow(x$groups),...)
 {
   if(!inherits(x,"moc")) stop("Not an object of class moc")
   if(!is.null(eval(x$data))){
@@ -618,18 +690,18 @@ plot.moc<-function(x,against=1:x$ntimes,main="",xlab="",ylab="",prob.legend=TRUE
     scale<-sqrt(apply(eval(x$resp),2,function(v)
                  mean(eval(x$prior.weights)*v[nav<-!is.na(v)]^2)/
                  mean(eval(x$prior.weights)[nav]))-center^2)
-  } else {center<-rep(0,x$ntimes);scale<-rep(1,x$ntimes)}
+  } else {center<-rep(0,x$nvar);scale<-rep(1,x$nvar)}
   matplot(w,cbind((t(x$observed.mean)-center)/scale,(t(x$fitted.mean)-center)/scale),
           type="n",main=main,xlab=xlab,ylab=ylab,col=group.colors,...)
   matpoints(against,(t(x$observed.mean)-center)/scale,col=group.colors,...)
   matlines(against,(t(x$fitted.mean)-center)/scale,type="o",pch=20,cex=.75,col=group.colors,...)
   if(prob.legend) { mtext(legend.text,side=4,outer=TRUE,at=((1:x$groups)+3)/(x$groups+6),col=group.colors) }
-  invisible(list(against=against,fitted=x$fitted,observed=x$observed,center=center,scale=scale))
+  invisible(list(moc.name=deparse(substitute(x)),against=against,fitted=x$fitted,observed=x$observed,center=center,scale=scale))
 }
 
 profilesplot<-function(x,...) UseMethod("profilesplot")
 
-profilesplot.moc<-function(x,against=1:x$ntimes,main="",xlab="",ylab="",col.legend=TRUE,scale=FALSE,group.colors=rainbow(x$groups),...)
+profilesplot.moc<-function(x,against=1:x$nvar,main=NULL,xlab="",ylab="",col.legend=TRUE,scale=FALSE,group.colors=rainbow(x$groups),type="subject",...)
 {
   if(!inherits(x,"moc")) stop("Not an object of class moc")
   if(!is.null(eval(x$data)))
@@ -637,6 +709,8 @@ profilesplot.moc<-function(x,against=1:x$ntimes,main="",xlab="",ylab="",col.lege
       attach(eval(x$data),name=deparse(x$data),pos=2)
       on.exit(detach(2),add=TRUE)
     }
+  if (is.null(main)) main <- paste(paste(x$resp,collapse=" "),"with",substitute(x))
+  type <- match.arg(type,c("subject","variable","posterior"))
   group.colors<-col2rgb(group.colors)/256
   if(col.legend) {
     oldpar<-par("oma"=c(0,0,0,6),"las"=1);on.exit(par(oldpar),add=TRUE)
@@ -645,22 +719,55 @@ profilesplot.moc<-function(x,against=1:x$ntimes,main="",xlab="",ylab="",col.lege
   if(scale) {
     center<-apply(eval(x$resp),2,mean,na.rm=TRUE)
     scale<-apply(eval(x$resp),2,sd,na.rm=TRUE)
-  } else {center<-rep(0,x$ntimes);scale<-rep(1,x$ntimes)}
+  } else {center<-rep(0,x$nvar);scale<-rep(1,x$nvar)}
   group.rgb<-t(apply(post.moc(x),1,function(y) (group.colors%*%y)))
-  matplot((against),(t(eval(x$resp))-center)/scale,
-          type="o",pch=20,cex=0.75,main=main,xlab=xlab,ylab=ylab,
-          col=rgb(group.rgb[,1],group.rgb[,2],group.rgb[,3]))
+  if(type=="subject") {
+    matplot((against),(t(eval(x$resp))-center)/scale,type="o",pch=20,cex=0.75,
+            main=main,xlab=xlab,ylab=ylab,col=rgb(group.rgb[,1],group.rgb[,2],group.rgb[,3]))
+  } else
+  { if(type=="variable") pairs(eval(x$resp),col=rgb(group.rgb[,1],group.rgb[,2],group.rgb[,3]),upper.panel=NULL,main=main)
+  else if(type=="posterior")  pairs(post.moc(x),col=rgb(group.rgb[,1],group.rgb[,2],group.rgb[,3]),upper.panel=NULL,main=main) }
   if(col.legend) { mtext(legend.text,side=4,outer=TRUE,at=((1:x$groups)+3)/(x$groups+6),
                          col=rgb(group.colors[1,],group.colors[2,],group.colors[3,])) }
 }
 
-plot.residuals.moc<-function(x,against="Index",groups=1:dim(x)[3],sunflower=FALSE,...)
+entropyplot <- function(x,...) UseMethod("entropyplot")
+
+entropyplot.moc <- function(x,main=NULL,std=TRUE,lwd=1.5,col=c("red3","green3","gray95"),legend=TRUE,...)
+  {
+    if(!inherits(x,"moc")) stop("Not an object of class moc")
+    if(!is.null(eval(x$data)))
+      {
+        attach(eval(x$data),name=deparse(x$data),pos=2)
+        on.exit(detach(2),add=TRUE)
+      }
+    parm<-split(x$coef,rep(c("mu","shape","extra","mix"),x$npar))
+    prior.entropy <- entropy(x$gmixture(parm$mix))
+    posterior.entropy <- entropy(post.moc(x))
+    max.ent <- ifelse(std,1,log(x$groups))
+    if(std) {col.ind <- 2} else { col.ind <- 1}
+    order.pripost <- order(prior.entropy[,col.ind],posterior.entropy[,col.ind])
+    n <- length(order.pripost)
+    if (is.null(main)) main <- paste("Prior and posterior",ifelse(std,"standardized",""),"entropy for",substitute(x))
+    plot(c(0,1),c(0,max.ent),xaxt="n",xlim=c(0,1),ylim=c(0,max.ent),type="n",main=main,xlab="",ylab="")
+    polygon(cbind((0:(n-1))/(n-1),((n-1):0)/(n-1)),
+            cbind(prior.entropy[order.pripost,col.ind], posterior.entropy[order.pripost[n:1],col.ind]),
+                  col=col[3],border=NA)
+    lines((0:(n-1))/(n-1),prior.entropy[order.pripost,col.ind],col=col[1],lwd=lwd)
+    lines(((n-1):0)/(n-1),posterior.entropy[order.pripost[n:1],col.ind],col=col[2],lwd=lwd)
+    if(legend) legend(1,0,c("Prior","Posterior"),lwd=lwd,col=col[1:2],ncol=2,xjust=1,bty="n")
+  }
+    
+    
+plot.residuals.moc<-function(x,against="Index",groups=1:dim(x)[3],sunflower=FALSE,group.colors=NULL,...)
 {
   if(sunflower) thisplot<-sunflowerplot else thisplot<-plot
   if(!inherits(x,"residuals.moc"))
     stop("Not an object of class residuals.moc !")
   if (!all(groups %in% (1:dim(x)[3])))
     stop("You requested residuals for non-existing groups !")
+  if(is.null(group.colors)) group.colors=rainbow(eval(as.name(attr(x,"moc.name")))$groups)
+  group.rgb <- mix.colors.moc(eval(as.name((attr(x,"moc.name")))),group.colors=group.colors)
   dim1<-dim(x)
   again<-against
   oldpar<-par(mfrow=c(length(groups),1),oma=c(0,0,2,0));on.exit(par(oldpar),add=TRUE)
@@ -669,12 +776,15 @@ plot.residuals.moc<-function(x,against="Index",groups=1:dim(x)[3],sunflower=FALS
   if(against=="Observation") against<-c(rep(1:dim1[2],rep(dim1[1],dim1[2])))
   if(against=="Index") against<-1:(dim1[1]*dim1[2])
   res.apply<-sapply(groups,function(i){
-    z<-na.omit(cbind(c(against),c(x[,,i])))
+    z<-na.omit(cbind(group.rgb,c(against),c(x[,,i])))
+    tmp.rgb <- z[,1]
+    z <- z[,-1]
     dimnames(z)<-list(NULL,c(vname,attr(x,"type")))
-    thisplot(z,main=paste("Group",i),...)
+    thisplot(z,main=paste("Group",i),col=tmp.rgb,...)
     if(again=="Index")  abline(v=(1:dim1[2])*dim1[1]+0.5)
   })
-  mtext(paste("MOC ",attr(x,"type")," residuals"),side=3,outer=TRUE,font=2)
+  mtext(paste("MOC ",attr(x,"type")," residuals of",attr(x,"moc.name")),side=3,outer=TRUE,font=2)
+  attr(res.apply,"moc.name") <- deparse(substitute(x))
   invisible(res.apply)
 }
 
@@ -690,10 +800,10 @@ mix.colors.moc<-function(object,group.colors=rainbow(object$groups))
 {
   if(!inherits(object,"moc")) stop("Not an object of class moc")
     if(length(group.colors)!=object$groups)
-        stop("Oooups ! Wrong number of colors: should be the same as number of groups.")
-	  group.rgb<-t(apply(post(object),1,function(y) ((col2rgb(group.colors)/256)%*%y)))
-	    invisible(rgb(group.rgb[,1],group.rgb[,2],group.rgb[,3]))
-	    }
+      stop("Oooups ! Wrong number of colors: should be the same as number of groups.")
+  group.rgb<-t(apply(post(object),1,function(y) ((col2rgb(group.colors)/256)%*%y)))
+  invisible(rgb(group.rgb[,1],group.rgb[,2],group.rgb[,3]))
+}
 	    
 
 ".First.lib"<-
@@ -702,6 +812,6 @@ function(lib, pkg)
   cat("\n",readLines(system.file("DESCRIPTION",package="moc")),sep="\n","\n")
   cat("\n   Supplementary utility functions to help combine MOC models can be found in\n",
       system.file("Utils","combine.moc.R",package="moc"),"\n   See the file for simple documentation.",
-      "\n   You will need to source that file to use those functions.\n\n")
+      "\n   You must source that file to use those functions.\n\n")
 }
     

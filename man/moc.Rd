@@ -9,17 +9,18 @@
     vector of observations or repeated measurements for
     subject \eqn{i} has the form
 
-    \deqn{f( Y_i = y_i |\, Z_i = z_i, X_i = x_i)  = \sum_k P( G_i = k |\, z_i)
-    \,h( y_i |\, G_i = k, x_i)}{f( Y[i] = y[i] | z[i], x[i]) =
-    \Sum_k P( G[i] = k | z[i]) h( y[i] | G[i] = k, x[i])}
+    \deqn{f( Y_i = y_i |\, Z_i = z_i, X_i = x_i)  = \sum_k \pi_k(z_i,x_i)
+    \,h_k( y_i |\, x_i)}{f( Y[i] = y[i] | z[i], x[i]) =
+    \Sum_k p_k(z[i],x[i]) h_k( y[i] | x[i])}
  
-    The \eqn{G_i}{G[i]} represent the mixture groups and \eqn{h()}
-    the conditional joint density of the observations \eqn{Y_i}{Y[i]}
-    given the covariates \eqn{(Z_i,X_i)}{(Z[i],X[i])}.
+    The \eqn{\pi_k()}{p_k()} represent the mixture probability
+    function and \eqn{h_k()} the conditional joint density of the
+    observations \eqn{Y_i}{Y[i]} given the covariates
+    \eqn{X_i}{X[i]} and mixture \eqn{k}.
     The user supplies either the joint or marginal conditional
     density(ies) of the components of \eqn{Y_i}{Y[i]}. In the latter case,
     the joint conditional density is constructed by taking the product of
-    the marginal densities ( assuming conditional independence ).
+    the marginal densities ( assuming conditional independence of the components ).
   }
   
 \usage{
@@ -90,7 +91,7 @@ ndigit=10, gradtol=0.0001, steptol=gradtol,iterlim=100,print.level=2,\dots)
     constraints, the parameters are all assumed to be real numbers.
     Thus the user should supply appropriate link functions and parameterize
     the density and parameters functions accordingly ( see the examples
-    ). By default missing values in the response variables \eqn{y} are assumed
+    ). By default missing values in the response variables \eqn{Y} are assumed
     to be missing at random, that is the \eqn{Likelihood} for the subset
     of valid observations is just the marginal \eqn{Likelihood} for this
     subset in each mixture. Specific treatment of missing values in the
@@ -221,6 +222,8 @@ moc1<-
 moc(moc.dat[,1:4],density=cnorm1,groups=3,gmu=gmu1,gshape=gshape1,expected=cmean1,
 pgmu=c(0.5, 2, 5),pgshape=c(0.7),pgmix=c(-0.6, -2.0), data=cnorm.dat,gradtol=1E-4)
 
+print(moc1)
+
 \dontrun{
 # Heterogeneous variances across mixture groups
 
@@ -255,6 +258,8 @@ moc3<-
 moc(moc.dat[,1:4],density=cnorm1,groups=3,gmu=gmu1,gshape=gshape3,expected=cmean3,
 pgmu=moc1$coef[1:3],pgshape=c(rep(moc1$coef[4],4)),pgmix=moc1$coef[5:6],
 data=cnorm.dat,gradtol=1E-4)
+
+print(moc3)
 
 cnorm.dat$ages<-cbind(1.7,3,4.2,5.6)
 
@@ -323,7 +328,12 @@ moc6<-
 moc(moc.dat[,1:4],density=poiss,groups=3,gmu=gmup,gmixture=gmixt,
 pgmu=c(-0.6,0.64, 0, 1.6),pgmix=c(-0.2,-1, -1 ,-2),gradtol=1E-4)
 
+print(moc6)
+
 obsfit.moc(moc6,along=dumm)
+
+entropy(moc1,moc3,moc6)
+
 \dontrun{
  plot(moc6,against=ages,main="MOC profiles",xlab="age",ylab="Y")
  plot(residuals(moc6))
