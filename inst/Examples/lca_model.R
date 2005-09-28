@@ -29,7 +29,7 @@ function(x,prob,...) {apply(prob*x+1-x,1,prod,na.rm=TRUE)}   ## of indicator var
                                                              ## It returns the joint density of the indicators.
 
 dmnom <-                                                     ## the same that can be used without the joint option of moc
-function(x,prob,...) {prob*x+1-x,1}
+function(x,prob,...) {prob*x+1-x}
 
 mnom.mu <- function(p) {inv.glogit(p)}
 

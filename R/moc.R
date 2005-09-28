@@ -1068,8 +1068,9 @@ plot.moc<-function(x,against=1:x$nvar,main=paste(substitute(x)),xlab="",ylab="",
   invisible(list(moc.name=deparse(substitute(x),control=NULL),against=against,fitted=x$fitted,observed=x$observed,center=center,scale=scale,graphic.par=par()))
 }
 
-density.moc <- function(object,var=NULL,along=NULL,plot=c("none","pp-plot","density","pq-plot"),type="l",...)
+density.moc <- function(x,var=NULL,along=NULL,plot=c("none","pp-plot","density","pq-plot"),type="l",...)
 {
+    object <- x
     if(is.null(var)) stop("argument var should be supplied, there is no default!")
     if(!all(var%in%(1:object$nvar))) stop(paste("var should be given as an integer list between 1 and nvar =",object$nvar))
     if(is.null(along)) {

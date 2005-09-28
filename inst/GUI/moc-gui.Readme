@@ -1,0 +1,49 @@
+This Tk user interface to the MOC package is considered
+alpha software: it has not been extensively tested and
+some known (and certainly unknown) bugs still remain.
+Consistency and validity checking between entries is minimal.
+Thus, most errors only appear when you run the model.
+Use it at your own risks.
+
+It is quite usable however and may be used to construct and evaluate 
+complex MOC models, though the resulting model may not be what you 
+expected. Indeed, in many situations it may be easier and more
+reliable to construct your model from the command line interface.
+Also note that no special expected function construction has been
+implemented for distributions that would normally use one. 
+Some prior knowledge and understanding of the MOC package is 
+advocated to efficiently use the GUI.
+
+The R commands window allows you to evaluate any valid R expressions,
+you can use it to construct all necessary variables and "User"
+functions which will then be available in the menus (when applicable).
+
+"Starting values", "Constraints" and "Labels" entries also expect
+simple R expressions that will evaluate to the required values.
+
+When using the GUI be especially careful about the following points:
+
+- Don't forget to set the required parameter functions and link for
+  each group (with "Link:" spin-box). The link functions have the
+  following meaning: for example, the "mu" parameter of the density is
+  set as link(mu) = FUN(pgmu), which is implemented 
+  as mu = inv.link(FUN(pgmu)).
+ 
+
+- When you make changes, the link functions and variables selections
+  are not always automatically refreshed correctly. 
+  Do a manual Refresh and check every selections before running the
+  model.
+
+- Consistency checks are minimal, so you can easily set a Binomial
+  model without Mu parameters, for example. The length of the starting
+  values, constraints and labels may easily be wrong.
+
+- Given the complexity of the expected function for some distribution
+  function, there are only two choices for this entry: the default
+  "Mu" which may not be appropriate, or a "User" defined function.
+
+- Each model you try to run will produce a moc call (or fitted moc
+  object) and a data list that contains the required functions and a
+  copy of the data, this can consume a lot of memory when you use a
+  large data set.

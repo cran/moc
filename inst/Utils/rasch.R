@@ -1,7 +1,7 @@
 ## author: Bernard Boulerice
 ## functions to construuct item response theory models
 ## with MOC version 0.8 and higher.
-## copyright: Bernard Boulerice 2002-2005
+## Copyright (C) 2002-2005 Bernard Boulerice
 
 # gherm.quad gives the nodes and weights of a quadrature to
 # approximate a normal integral (Hermite quadrature).

@@ -30,14 +30,14 @@
 profiles.postCI(object, data = NULL, level = 0.95,
                 interpolate = TRUE)
 
-density.moc(object, var = NULL, along = NULL,
+density.moc(x, var = NULL, along = NULL,
             plot = c("none","pp-plot","density","pq-plot"),
             type = "l", \dots)
 }
 
 \arguments{
   
-  \item{object}{ A fitted \code{moc} object.}
+  \item{object, x}{ A fitted \code{moc} object.}
   
   \item{parm}{ A list of formulas beginning with \code{~} or expressions of the
     parameters denoted \eqn{p1,p2,\ldots} for which confidence intervals

@@ -1,6 +1,6 @@
 AIC.moc                 Information criterions for MOC models.
-confint.moc             Parameter and profiles confidence intervals
-                        and likelihood profiling of MOC models.
+confint.moc             Parameter and profiles confidence intervals and
+                        likelihood profiling of MOC models.
 inv.glogit              MOC utility functions.
 moc                     Fit a General Nonlinear Multivariate Mixture
                         Model (MOC)

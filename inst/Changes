@@ -1,3 +1,10 @@
+Changes in MOC 1.0-1
+======================
+
+   Essentially changed density.moc(object... to density.moc(x...
+   in order to comply to the new corresponding S3 generic of
+   R version 2.2.0
+
 Changes in MOC 1.0-0
 ======================
 

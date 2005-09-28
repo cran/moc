@@ -131,7 +131,7 @@ f.list
   }
 
 # The following function find unique patterns in the data X
-# and returns a matrix with those pattern and a column ot total weight
+# and returns a matrix with those pattern and a column of total weight
 
 find.unique.pattern<-function(X,w=rep(1,dim(X)[1]))
 {
