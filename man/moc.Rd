@@ -21,7 +21,7 @@
   The user supplies either the joint or marginal conditional
   density(ies) of the components of \eqn{Y_i}{y[i]}. In the latter case,
   the joint conditional density is constructed by taking the product of
-  the marginal densities ( assuming conditional independence of the components ).
+  the marginal densities (assuming conditional independence of the components).
   
   The \code{update.moc} function allows to update or modify an already
   fitted \code{moc} object and to put constraint on its parameters.
@@ -37,7 +37,7 @@ moc(y, density = NULL, joint = FALSE, groups = 1,
     ndigit = 10, gradtol = 0.0001, steptol = gradtol,
     iterlim = 100, print.level = 1, \dots)
 
-update.moc(object, groups = 1:object$groups, parm = object$coef,
+\method{update}{moc}(object, groups = 1:object$groups, parm = object$coef,
            what = NULL, evaluate = FALSE, \dots)
 
 }
@@ -74,7 +74,7 @@ update.moc(object, groups = 1:object$groups, parm = object$coef,
   \item{pgmu, pgshape, pgextra, pgmix}{ Vector of initial estimates for the
     parameters of the location, shape, extra and mixture functions.}
 
-  \item{wt}{ Vector of subjects sampling weights. Actually the program uses
+  \item{wt}{ Vector of subjects sampling weights. Currently the program uses
     standard sample-weighted \eqn{\log(Likelihood)} assuming fixed weights. }
 
   \item{scale.weight}{ Logical value specifying if the vector of weights 
@@ -83,7 +83,7 @@ update.moc(object, groups = 1:object$groups, parm = object$coef,
   \item{check.length}{ Logical value specifying check of rows
     length returned by the functions in \code{gextra} against the number
     of variables in \eqn{y}. Especially useful when the \code{density}
-    requires more parameters then the number of variables like covariance
+    requires more parameters than the number of variables like covariance
     parameters for multivariate normal.}
 
   \item{data}{ An optional \code{data frame} or \code{list} containing
@@ -119,7 +119,7 @@ update.moc(object, groups = 1:object$groups, parm = object$coef,
   The procedure minimizes the resulting \eqn{-\log(Likelihood)} without
   constraints, the parameters are all assumed to be real numbers.
   Thus the user should supply appropriate link functions and parameterize
-  the density and parameters functions accordingly ( see the examples).
+  the density and parameters functions accordingly (see the examples).
   By default missing values in the response variables \eqn{y} are assumed
   to be missing at random, that is the likelihood for the subset
   of valid observations is just the marginal likelihood for this
@@ -129,7 +129,7 @@ update.moc(object, groups = 1:object$groups, parm = object$coef,
   and \code{gextra}. The function \code{density} can return \code{NA}
   and yields the default treatment of missing values in the response.
   The functions \code{gmixture}, \code{gmu}, \code{gshape} and
-  \code{gextra}, can not return \code{NA} thus missing values in the
+  \code{gextra}, cannot return \code{NA} thus missing values in the
   covariates should be treated explicitly by these functions.
   
   The \code{lists} of functions \code{gmu}, \code{gshape},
@@ -142,7 +142,7 @@ update.moc(object, groups = 1:object$groups, parm = object$coef,
   second function for the second group and so on.
   The functions in the same \code{list} share the same parameters
   but the different \code{lists} have different parameters
-  ( see the examples ). 
+  (see the examples). 
 
   Setting the \code{attributes} \emph{parameters} for functions
   \code{gmu}, \code{gshape}, \code{gextra} and \code{gmixture} will
@@ -159,7 +159,7 @@ update.moc(object, groups = 1:object$groups, parm = object$coef,
   \code{nlm}.
   The printed output includes  \eqn{-2 \log(Likelihood)}{-2 * log(Likelihood)},
   the corresponding df, AIC, BIC, entropy and ICL-BIC
-  ( entropy corrected BIC, see \code{\link{AIC.moc}} ),
+  (entropy corrected BIC, see \code{\link{AIC.moc}}),
   mean mixture probabilities, mean expected and observed values for
   each mixture group, the maximum likelihood estimates and standard
   errors.}
@@ -178,7 +178,7 @@ update.moc(object, groups = 1:object$groups, parm = object$coef,
   \code{moc} model estimation in a \emph{jackknife} loop.
   
   Be aware that degrees of freedom (df) for mixture models are usually
-  useless ( if not meaningless ) and likelihood-ratio of
+  useless (if not meaningless) and likelihood-ratio of
   \emph{apparently} nested models often does not converge to a
   Chi-Square with corresponding df.
 }   

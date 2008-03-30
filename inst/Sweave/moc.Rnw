@@ -1,6 +1,6 @@
 % -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
 
-% Copyright (C) 2002-2005  Bernard Boulerice
+% Copyright (C) 2002-2008  Bernard Boulerice
 % This file is a template, you can use it without modification.
 % You don't have permission to modify it but you can modify
 % any copy of it as long as you rename the file and change
@@ -11,8 +11,8 @@
 % and other options:(there are defaults for every options except moc.name,
 % the defaults for author and email are intended to be useless)
 % moc.sweave <- list(moc.name=,main.title=,digits=,fit.lbl=,fit.names=,
-% scale=, group.colors=,xlab=,ylab=,prob.legend=)
-% The usual sequence of command to use it within R will look like this:
+% scale=, group.colors=,xlab=,ylab=,prob.legend=,...) see below for other options.
+% The usual sequence of commands to use this template within R would be something like:
 % library(tools)
 % moc.sweave <- list(moc.name="moc.name", author="your name", email="your email",
 % main.title="moc.name",digits=5, ...)
@@ -57,7 +57,7 @@ if(is.null(.moc.sweave$model.description)) .moc.sweave$model.description<-""
                                         # for example moc.sweave$model.description<-"\\input{mocinput.tex}" will include
                                         # the file mocinput.tex which should be a normal LaTeX file (single \).
 @
-\title{\href{mailto:Bernard.Boulerice@umontreal.ca}{MOC} Mixtures: Report on \Sexpr{noquote(.moc.sweave$main.title)} model} 
+\title{\href{mailto:Bernard.Boulerice@sympatico.ca}{MOC} Mixtures: Report on \Sexpr{noquote(.moc.sweave$main.title)} model} 
 \author{\href{mailto:\Sexpr{noquote(.moc.sweave$email)}}{\Sexpr{noquote(.moc.sweave$author)}}} 
 
 \maketitle
@@ -97,7 +97,7 @@ cat(.moc.sweave$model.description,"\n")
 The following table shows the maximum likelihood estimates of the
 \Sexpr{sum(eval(.moc.sweave$moc.name)$npar)} parameters in the model.
 
-%\begin{table}[h]
+%\begin{table}[hh]
 %\caption{Maximum likelihood estimates}
 %\label{tab:mle}
 \begin{center}
@@ -110,27 +110,30 @@ TeXCoefTable.moc(eval(.moc.sweave$moc.name),digits=.moc.sweave$digits)
 \end{center}
 %\end{table}
 
-The mean mixture probabilities are given in the following table,
-while figure \ref{fig:postprob} shows the subjects
-posterior probabilities.
-
-%\begin{table}[h]
+%\begin{table}[hh]
 %\caption{Mixture membership probabilities}
 %\label{tab:prob}
-\begin{center}
+%\begin{center}
 
 <<results=tex>>=
+if(eval(.moc.sweave$moc.name)$groups > 1) {
+cat("The mean mixture probabilities are given in the following table,\n")
+cat("while figure \\ref{fig:postprob} shows the subjects posterior probabilities.\n")
+cat("\\begin{center}\n")
 TeXObsfitMixPTable.moc(obsfit.table,digits=.moc.sweave$digits,lbl="Probabilities",fbox=.moc.sweave$obsfit.fbox)
+cat("\\end{center}\n")
+}
 
 @
  
-\end{center}
+%\end{center}
 %\end{table}
 
 Posterior weighted means for fitted and observed values of the
 model follows, figure \ref{fig:profiles} shows their plot,
 while individual profiles are shown in figure \ref{fig:subjprof} .
-%\begin{table}[h]
+
+%\begin{table}[hh]
 %\caption{Posterior mean fitted and observed values}
 %\label{tab:obsfit}
 \begin{center}
@@ -172,29 +175,37 @@ group.colors=.moc.sweave$group.colors)
 \end{center}
 \end{figure}
 
-\begin{figure}[f]
-\begin{center}
-
+%\begin{figure}[f]
+%\begin{center}
+<<results=tex>>=
+if(eval(.moc.sweave$moc.name)$groups > 1){
+cat("\\begin{figure}[f]\n\\begin{center}\n")
+}
 <<fig=TRUE>>=
-pairs(post(eval(.moc.sweave$moc.name)),col=mix.colors.moc(eval(.moc.sweave$moc.name),
-group.colors=.moc.sweave$group.colors),upper.panel=NULL)
+if(eval(.moc.sweave$moc.name)$groups > 1){
+profilesplot.moc(eval(.moc.sweave$moc.name),group.colors=.moc.sweave$group.colors,main="",type="posterior")
+}
+<<results=tex>>=
+if(eval(.moc.sweave$moc.name)$groups > 1){
+cat("\\caption{Subjects posterior probabilities}\n")
+cat("\\label{fig:postprob}\n")
+cat("\\end{center}\n\\end{figure}\n")
+}
 
 @
-
-\caption{Subjects posterior probabilities}
-\label{fig:postprob}
-\end{center}
-\end{figure}
-
+%\caption{Subjects posterior probabilities}
+%\label{fig:postprob}
+%\end{center}
+%\end{figure}
               
 \section{Model Fit}
 The following table gives information theory criterions to evaluate
 the fit of the model. The entropy of the model is an index of mixture
 separation while \emph{ICL-BIC} is an entropy corrected \emph{BIC}. 
 Further details concerning these criterions can
-be found in \cite{MP:2000}.
+be found in \cite{MP:2000} and \cite{BCL:2000}.
 
-%\begin{table}[h]
+%\begin{table}[hh]
 %\caption{Information criterions}
 %\label{tab:fit}
 \begin{center}
@@ -217,6 +228,14 @@ rm(.moc.sweave)
   R: A Language for Data Analysis and Graphics.
   \emph{J. Comput. and Graph. Stat.}, \textbf{5}, 299--314.
 
+\bibitem{BCL:2000} Biernacki, C., Celeux, G., Govaert, G. (2000) 
+  Assessing a Mixture Model with the Integrated Completed Likelihood.
+  \emph{IEEE Transaction on Pattern Analysis and Machine Learning}, \textbf{22}, 719--725.
+
+\bibitem{LIND:1983} Lindsay, B. G. (1983) 
+  The Geometry of Mixture Likelihoods: A General Theory. 
+  \emph{Annals of Statistics}, \textbf{11}, 86--94.
+
 \bibitem{LR:1992} Lindsay, B. G., Roeder, K. (1992) 
   Residual diagnostics for mixture models.
   \emph{J. Amer. Statist. Assoc.}, \textbf{87}, 785--794.
@@ -224,11 +243,6 @@ rm(.moc.sweave)
 \bibitem{MP:2000}  McLachlan, G., Peel, D. (2000) 
   \emph{Finite mixture models.} 
   New York:Wiley-Interscience.
-
-\bibitem{RLN:1999}  Roeder, K., Lynch, K., Nagin, D. (1999) 
-  Modeling Uncertainty in Latent Class Membership: A Case Study in Criminology. 
-  \emph{J. Amer. Statist. Assoc.}, \textbf{94}, 766--776.
-
 
 \end{thebibliography}
 

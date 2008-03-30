@@ -1,12 +1,54 @@
+Changes in MOC 1.0-5
+====================
+
+   Updated the format of the supplied data set,
+   older save format are no longer accepted.
+
+   Removed escape characters that are no longer accepted or required.
+
+   Updated some Rd files to comply with the method naming conventions 
+   in the new version of R. (This has no visible effect for the user.)
+
+   Refined and extended the parameters search region when 
+   profiling models in confint.moc. Use more interpolation points.
+
+
+Bugs Fixes:
+-----------
+
+   In confint.moc the complete profiling likelihood rejection CI were wrong: 
+
+    * The degrees of freedom used in the asymptotic distribution
+      approximation were wrong (was npar-1, should be 1).
+    ( Strangely it was correct in my own testing version but wrong 
+      in the official release.)
+
+    * The procedure halted with an error when it didn't find parameters
+      values satisfying the prescribed level. This is now fixed and will return
+      -Inf or Inf when the tested parameters values are not small or big 
+      enough to achieve the prescribed level.
+
+   In approx of confint.moc ties="orderd" replaced by good syntax ties="ordered"
+
+   For "pp-plot" and "pq-plot" options of density.moc, changed the way approx is called
+   so it doesn't return an error when there is only one point with a mass of 1.
+
+   Corrected a minor bug affecting name substitution in "post" object, 
+   this does not affect the results.
+
+
+
 Changes in MOC 1.0-1
-======================
+====================
 
    Essentially changed density.moc(object... to density.moc(x...
    in order to comply to the new corresponding S3 generic of
    R version 2.2.0
 
+
+
 Changes in MOC 1.0-0
-======================
+====================
 
    The MOC library have now been extensively tested on a lot of real
    and simulated data sets, the results have been compared to other

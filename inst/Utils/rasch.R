@@ -1,13 +1,13 @@
 ## author: Bernard Boulerice
-## functions to construuct item response theory models
+## functions to construct item response theory models
 ## with MOC version 0.8 and higher.
-## Copyright (C) 2002-2005 Bernard Boulerice
+## Copyright (C) 2002-2008 Bernard Boulerice
 
 # gherm.quad gives the nodes and weights of a quadrature to
 # approximate a normal integral (Hermite quadrature).
 # rasch returns a function that depends on a mean value and "thresholds" and compute
 # the joint likelihood of a group of items. It suppose the existence of a
-# variable of type "list" herm containing the points et weights of the quadrature.
+# variable of type "list" herm containing the points and weights of the quadrature.
 
 gherm.quad <-
 function (n) 
@@ -54,7 +54,7 @@ lapply(1:nitems,function(it) array(norm.val[[it]],c(nlevs[it],dim(norm.val[[it]]
 
 
 ## The function rasch.density only returns mu, however when we call MOC
-## resp (x) should be an arbitrary matrix of dimension n.sujets by n.variables.
+## resp (x) should be an arbitrary matrix of dimension n.subjects by n.variables.
 ## We can use the standardized scores of the scale corresponding to the items
 ## such that the observed.mean make sens.
 

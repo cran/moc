@@ -14,9 +14,8 @@
   
   \code{residuals.moc} computes response, deviance, gradient and mixture
   residuals. The residuals are optionally weighted by the posterior
-  mixture probabilities, globally ( with \code{post} ) or within each
-  group ( in that case \code{post} is divided by its mean for each group
-  ).
+  mixture probabilities, globally (with \code{post}) or within each
+  group (in that case \code{post} is divided by its mean for each group).
   
   \code{npmle.gradient} computes the components and average of the
   mixture gradient function at some specified parameters values
@@ -48,7 +47,7 @@ npmle.gradient(object, parm = object$coef, gradient = TRUE,
   
   \item{object}{ Object of class \code{moc}.}
   
-  \item{type}{Type of residuals: either "deviance" ( the default ),
+  \item{type}{Type of residuals: either "deviance" (the default),
     "response", "gradient" and "mixture" (see description and details).}
   
   \item{post.weight}{ Specify if the residuals must be weighted by the
@@ -63,7 +62,7 @@ npmle.gradient(object, parm = object$coef, gradient = TRUE,
   
   \item{gradient}{ Boolean specifying if you require the density for each
     mixture group (\emph{TRUE}) or the empirical measure (\emph{FALSE}) in
-    the numerator of \code{npmle.gradient} ( see the description above ).}
+    the numerator of \code{npmle.gradient} (see the description above).}
   
   
   \item{average}{ Boolean that specify if \code{npmle.gradient} should return
@@ -98,7 +97,7 @@ npmle.gradient(object, parm = object$coef, gradient = TRUE,
   components while gradient residuals uses the mixture gradient
   components defined in the description above. The average of the first
   form above which we call the gradient can be used to check some
-  minimal requirement about a a proposed solution given with parm: if it
+  minimal requirement about a proposed solution given with parm: if it
   is a maximum likelihood (not necessarily a non-parametric maximum
   likelihood) the average should be \eqn{0}.
   See Lindsay, B.G. (1983) for details about the use of the gradient

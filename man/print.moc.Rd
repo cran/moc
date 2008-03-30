@@ -51,8 +51,8 @@ obsfit.moc(object, along = list(cons = rep(1, object$nsubject)),
    \deqn{\hat{\bar{\tau}}_k = \frac{\sum_i wt_i\,\hat{\tau}_{i,k}}
      {\sum_i wt_i}}{\Sum_i (wt[i] * post[i,k]) / \Sum_i wt[i]}
    The weighted posterior means of a function \eqn{g()} of the data
-   ( which are the empirical estimators of the conditional expectation given
-   mixture group ) are computed as
+   (which are the empirical estimators of the conditional expectation given
+   mixture group) are computed as
    \deqn{\frac{\sum_i wt_i\,\hat{\tau}_{i,k}\,g(y_i)}{\sum_i
        wt_i\,\hat{\tau}_{i,k}}}{\Sum_i (wt[i] * post[i,k] * g(y[i])) /
      \Sum_i (wt[i] * post[i,k])}

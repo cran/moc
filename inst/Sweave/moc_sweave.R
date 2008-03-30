@@ -1,4 +1,4 @@
-#  Copyright (C) 2002-2005 Bernard Boulerice
+#  Copyright (C) 2002-2008 Bernard Boulerice
 #  Sweave utilities for Mixture of Curves
 
 #  This file is not loaded with the library moc, it has to be sourced separately.
@@ -10,7 +10,7 @@
 #  headers: character vector specifying the column labels (Parameters & Estimates ...)
 #  spacing: LaTeX command to include extra spacing before the coefficient labels
 #           extracted from the functions parameters attributes
-#  align: alignment string fot tabular environment
+#  align: alignment string for tabular environment
 #  ... : arguments to be passed to cat like file and append
 
 
@@ -63,7 +63,7 @@ TeXCoefTable.moc<-function(object,digits=NULL,headers=
 #       defaults to the moc.list names
 #  digits: number of significant digits to be printed
 #  headers: character vector specifying the column labels
-#  align: alignment string fot tabular environment
+#  align: alignment string for tabular environment
 #  ... : arguments to be passed to cat like file, append
 
 TeXFitTable.moc<-function(moc.list,lbl=moc.list,digits=NULL,
@@ -89,7 +89,7 @@ TeXFitTable.moc<-function(moc.list,lbl=moc.list,digits=NULL,
 #  lbl: character vector used as label
 #  digits: number of digits to be printed
 #  headers: character vector specifying the column labels
-#  align: alignment string fot tabular environment
+#  align: alignment string for tabular environment
 #  ... : arguments to be passed to cat like file and append
 
 TeXMixPTable.moc<-function(object,lbl=NULL,digits=NULL,headers=paste("Group",1:object$groups),
@@ -113,7 +113,7 @@ TeXMixPTable.moc<-function(object,lbl=NULL,digits=NULL,headers=paste("Group",1:o
 #  headers: character vector specifying sub-table labels
 #  spacing: LaTeX command to include extra spacings before the labels
 #  transpose: logical value indicating whether to transpose or not the matrices
-#  align: alignment string fot tabular environment
+#  align: alignment string for tabular environment
 #  ... : arguments to be passed to cat like file and append
 
 TeXMeanTable.moc<-function(object,digits=NULL,headers=c("Fitted","Observed"),spacing="\\hspace{6pt}",transpose=FALSE,align=NULL,...)
@@ -146,7 +146,7 @@ TeXMeanTable.moc<-function(object,digits=NULL,headers=c("Fitted","Observed"),spa
 #  lbl: character vector used as label
 #  digits: number of digits to be printed
 #  headers: character vector specifying the prior and posterior probability labels
-#  align: alignment string fot tabular environment
+#  align: alignment string for tabular environment
 #  ... : arguments to be passed to cat like file and append
 
 TeXObsfitMixPTable.moc<-function(object,lbl="Probabilities",digits=NULL,headers=c("Prior","Posterior"),
@@ -195,7 +195,7 @@ TeXObsfitMixPTable.moc<-function(object,lbl="Probabilities",digits=NULL,headers=
 #  headers: character vector specifying sub-table labels first for fitted second for observed
 #  spacing: LaTeX command to include extra spacings before the labels
 #  transpose: logical value indicating whether to transpose or not the matrices
-#  align: alignment string fot tabular environment
+#  align: alignment string for tabular environment
 #  ... : arguments to be passed to cat like file and append
 
 TeXObsfitMeanTable.moc<-function(object,digits=NULL,headers=c("Fitted","Observed"),spacing="\\hspace{6pt}",

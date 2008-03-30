@@ -1,3 +1,12 @@
+To use this interface, simply "source" the file moc-gui.R in R
+then type
+
+moc.gui()
+
+at the R prompt.
+
+Notes:
+
 This Tk user interface to the MOC package is considered
 alpha software: it has not been extensively tested and
 some known (and certainly unknown) bugs still remain.
@@ -43,7 +52,7 @@ When using the GUI be especially careful about the following points:
   function, there are only two choices for this entry: the default
   "Mu" which may not be appropriate, or a "User" defined function.
 
-- Each model you try to run will produce a moc call (or fitted moc
+- Each model you try to run will produce a MOC call (or fitted MOC
   object) and a data list that contains the required functions and a
   copy of the data, this can consume a lot of memory when you use a
   large data set.

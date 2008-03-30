@@ -12,7 +12,7 @@
   precise CI for the original parameters are obtained through profiling
   of the likelihood function (that is evaluation of the likelihood over
   a wide range of values in the parameter space). When profiling is
-  requested the deviance over different parameters values is also
+  requested the deviance over different parameters' values is also
   returned.
   
   \code{profiles.postCI} computes data values for which the empirical
@@ -30,7 +30,7 @@
 profiles.postCI(object, data = NULL, level = 0.95,
                 interpolate = TRUE)
 
-density.moc(x, var = NULL, along = NULL,
+\method{density}{moc}(x, var = NULL, along = NULL,
             plot = c("none","pp-plot","density","pq-plot"),
             type = "l", \dots)
 }
@@ -86,8 +86,10 @@ density.moc(x, var = NULL, along = NULL,
   \item{type}{ The type of lines in the plot, see \code{plot} for
     details.}
   
-  \item{\dots}{ Used only in \code{density.moc} to pass arguments
-    directly to the plotting function.}
+  \item{\dots}{ Used in \code{density.moc} to pass arguments
+    directly to the plotting function. In \code{confint.moc} iterlim
+    will be passed to \code{update.moc} and offscal will change the 
+    profiling parameters search range.}
 }
 \value{
   \code{confint.moc} returns a list containing a list of arrays
@@ -99,8 +101,8 @@ density.moc(x, var = NULL, along = NULL,
   where \eqn{\hat{p}}{p_max} is the maximum likelihood estimator of the
   parameters and \eqn{\hat{\Sigma}}{S} its asymptotic covariance
   matrix. It also returns univariate, joint conditional and likelihood
-  rejection confidence intervals for the parameters  ( when profiling
-  has been requested ).
+  rejection confidence intervals for the parameters (when profiling
+  has been requested).
   
   \code{profiles.postCI} returns a list of array with upper and lower
   bounds on \emph{data} profiles for each mixture group.
@@ -125,10 +127,10 @@ density.moc(x, var = NULL, along = NULL,
   variability present in the data. The methods \code{profiles.postCI}
   and \code{density.moc} are especially intended to this purpose.
   The method \code{confint.moc} is quite different in essence since it
-  is used to describe parameters uncertainty that depends on sampling
+  is used to describe parameters' uncertainty that depends on sampling
   scheme and size, estimation method and goodness-of-fit of the model.
-  A model with small parameters uncertainty can poorly describe data
-  variability while a model with large parameters uncertainty can be
+  A model with small parameters' uncertainty can poorly describe data
+  variability while a model with large parameters' uncertainty can be
   very good at describing data variability.
 }
 

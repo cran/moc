@@ -1,19 +1,20 @@
 ## This example deals with the use of mixture model to obtain empirical Bayes estimates
 ## for Poisson rates in rare disease mapping.
-## The data consists of sudden infant death syndrome counts in 100 counties in north Caroline and are
-## available at http://sal.agecon.uiuc.edu/datasets/sids.zip and also in the examples of
-## Bugs (http://www.mrc-bsu.cam.ac.uk/bugs/). The version we use here is
-## nc.sids in package=spdep since it is very complete with North Carolina maps and centroide.
-## This example only use the 1974 data.                   
+## The data consist of sudden infant death syndrome counts in 100 counties in north Caroline
+## and are available at http://sal.agecon.uiuc.edu/datasets/sids.zip
+## and also in the examples of Bugs (http://www.mrc-bsu.cam.ac.uk/bugs/).
+## The version we use here is nc.sids in package=spdep since it is very complete
+## with North Carolina maps and centroids.
+## In this example we only use the 1974 data.                   
 
-library(moc)                   ## first load the required moc library
-data(nc.sids,package="spdep")  ## and the data.
+library(moc)                   #first load the required moc library
+data(nc.sids,package="spdep")  #and the data.
 
 ## Poisson distribution is appropriate for counts of rare events.
 
 poiss <- function(x,la,...) {dpois(x,la)}
 
-## The mean of the poisson process is taken as the base rate (exp(p) > 0) times
+## The mean of the Poisson process is taken as the base rate (exp(p) > 0) times
 ## the expected number of cases which is proportional to the size of the county.
 
 smr.ecases <- function(p,expected.cases) {exp(p)*cbind(expected.cases)}
@@ -27,7 +28,7 @@ gmu.smr.sids <- list(G1=function(p) smr.ecases(p[1],nc.sids$ecases),
 
 ## In fact it is coded such that the analysis corresponds to that of the
 ## standardized mortality rate (SMR = O/E : observed cases/expected cases)
-## which we know is higly sensitive to the size of the county extreme SMR
+## which we know is highly sensitive to the size of the county extreme SMR
 ## having much chances to appear in smaller counties. As illustrated by the
 ## following plot:
 plot(nc.sids$ecases,nc.sids$SID74/nc.sids$ecases)
@@ -56,7 +57,7 @@ plot(nc.sids$ecases,nc.sids$SID74)
 lines(c(0,max(nc.sids$ecases)),exp(nc.smr2$coef[1])*c(0,max(nc.sids$ecases)))
 lines(c(0,max(nc.sids$ecases)),exp(nc.smr2$coef[2])*c(0,max(nc.sids$ecases)))
 
-## As ce can see the empirical posterior mean provides a good shrinkage of the
+## As we can see the empirical posterior mean provides a good shrinkage of the
 ## SMR estimates which is less dependent on county size
 plot(nc.sids$ecases,nc.sids$SID74/nc.sids$ecases)
 points(nc.sids$ecases,apply(post(nc.smr2),1,function(x) sum(x*exp(nc.smr2$coef[1:2]))),col="red",pch=5)
@@ -71,10 +72,11 @@ smr2.col <- mix.colors.moc(nc.smr2,group.colors=c("blue","red"))
 library(maptools)   
 plot(sidspolys, main="SMR_EB of SIDS in North Carolina",border="grey",smr2.col,forcefill=FALSE)
 ## If you don't use the library maptools the following commands are equivalent.
-## plot(attr(sidspolys, "maplim"),type="n",asp=1)
-## for(i in 1:100) polygon(sidspolys[[i]], border="grey",col=smr2.col[i])
-legend(-84,34,format(apply(cbind(c(0,0.25,0.5,0.75,1),c(1,0.75,0.5,0.25,0)),1,function(x) sum(x*exp(nc.smr2$coef[1:2]))),
-                     digits=4),fill=c(rgb(1,0,0),rgb(0.75,0,0.25),rgb(0.5,0,0.5),rgb(0.25,0,0.75),rgb(0,0,1)))
+#  plot(attr(sidspolys, "maplim"),type="n",asp=1)
+#  for(i in 1:100) polygon(sidspolys[[i]], border="grey",col=smr2.col[i])
+legend(-84,34,format(apply(cbind(c(0,0.25,0.5,0.75,1),c(1,0.75,0.5,0.25,0)),1,
+                           function(x) sum(x*exp(nc.smr2$coef[1:2]))),digits=4),
+       fill=c(rgb(1,0,0),rgb(0.75,0,0.25),rgb(0.5,0,0.5),rgb(0.25,0,0.75),rgb(0,0,1)))
 
 ## As we can see there are some spatial heterogeneity in the spatial distribution of sids.
 ## Part of it can be due to some remaining effect of county size, however we can
@@ -84,7 +86,8 @@ legend(-84,34,format(apply(cbind(c(0,0.25,0.5,0.75,1),c(1,0.75,0.5,0.25,0)),1,fu
 ## A simple way to do this is to make the mixture probabilities of each counties depend on the
 ## SMR of the neighborhood counties.
 
-nc.sids.smr.nb <- sapply(ncCR85.nb,function(nb) sum(nc.sids[nb,"SID74"])/sum(nc.sids[nb,"BIR74"]))/sum(nc.sids$SID74)*sum(nc.sids$BIR74)
+nc.sids.smr.nb <- sapply(ncCR85.nb,function(nb)
+                         sum(nc.sids[nb,"SID74"])/sum(nc.sids[nb,"BIR74"]))/sum(nc.sids$SID74)*sum(nc.sids$BIR74)
 
 smr.mix.nb <- function(pmix) t(apply(cbind(pmix[1]+pmix[2]*nc.sids.smr.nb),1,inv.glogit))
 
@@ -93,7 +96,7 @@ nc.smr2.nb <- moc(nc.sids$SID74, density = poiss, groups=2, gmu = gmu.smr.sids[1
     gmixture=smr.mix.nb,pgmu =  nc.smr2$coef[1:2], pgmix=c(nc.smr2$coef[3],0.1))
 
 ## The positive coefficient of regression on neighborhood counties has a small p-value
-## and the decrease in -likelihood is important showing the presence spatial dependance.
+## and the decrease in -likelihood is important showing the presence spatial dependence.
 nc.smr2.nb
 AIC(nc.smr2,nc.smr2.nb,k="BIC")
 
@@ -104,21 +107,25 @@ plot(sidspolys, main="SMR_EB_NB of SIDS in North Carolina",border="grey",smr2.nb
 legend(-84,34,format(apply(cbind(c(0,0.25,0.5,0.75,1),c(1,0.75,0.5,0.25,0)),1,function(x) sum(x*exp(nc.smr2.nb$coef[1:2]))),
                      digits=4),fill=c(rgb(1,0,0),rgb(0.75,0,0.25),rgb(0.5,0,0.5),rgb(0.25,0,0.75),rgb(0,0,1)))
 
-## now shows more spatial homogeneity and the values shows that we have achived slightly better shrinkage.
+## now shows more spatial homogeneity and the values shows that
+## we have achieved slightly better shrinkage.
  plot(nc.sids$ecases,nc.sids$SID74/nc.sids$ecases)
- points(nc.sids$ecases,apply(post(nc.smr2),1,function(x) sum(x*exp(nc.smr2$coef[1:2]))),col="red",pch=5)
- points(nc.sids$ecases,apply(post(nc.smr2.nb),1,function(x) sum(x*exp(nc.smr2.nb$coef[1:2]))),col="blue",pch=8)
+ points(nc.sids$ecases,apply(post(nc.smr2),1,
+                             function(x) sum(x*exp(nc.smr2$coef[1:2]))),col="red",pch=5)
+ points(nc.sids$ecases,apply(post(nc.smr2.nb),1,
+                             function(x) sum(x*exp(nc.smr2.nb$coef[1:2]))),col="blue",pch=8)
 
-## The preceeding model require the identification of the neighborhood of each county
-## and restrict spatial dependance to adjacent counties. An alternative approach
-## would be to consider the dependance of each county on other counties
+## The preceding model require the identification of the neighborhood of each county
+## and restrict spatial dependence to adjacent counties. An alternative approach
+## would be to consider the dependence of each county on other counties
 ## to be inversely proportional to their distance. A simple way to
 ## achieve this would be to compute for each county, the weighted SMR of the other counties
-## with the weigths being the inverse of the squared distance between the counties.
+## with the weights being the inverse of the squared distance between the counties.
 sids.dist.nb <- t(apply(sidscents,1,function(x) apply((x-t(sidscents))^2,2,sum)))
 for(i in 1:100) sids.dist.nb[i,-i] <-  1/sids.dist.nb[i,-i]/sum(1/sids.dist.nb[i,-i])
 
-nc.smr.dist.nb <- apply(nc.sids$SID74*t(sids.dist.nb),2,sum)/apply(nc.sids$BIR74*t(sids.dist.nb),2,sum)/sum(nc.sids$SID74)*sum(nc.sids$BIR74)
+nc.smr.dist.nb <- apply(nc.sids$SID74*t(sids.dist.nb),2,sum)/
+  apply(nc.sids$BIR74*t(sids.dist.nb),2,sum)/sum(nc.sids$SID74)*sum(nc.sids$BIR74)
 
 smr.mix.dist.nb <- function(pmix) t(apply(cbind(pmix[1]+pmix[2]*nc.smr.dist.nb),1,inv.glogit))
 
@@ -134,8 +141,9 @@ entropy(nc.smr2,nc.smr2.nb,nc.smr2.dist.nb)
 ## in a little more homogeneity in the SMR mapping.
 smr2.dist.nb.col <- mix.colors.moc(nc.smr2.dist.nb,group.colors=c("blue","red"))
 plot(sidspolys, main="SMR_EB_NB of SIDS in North Carolina",border="grey",smr2.dist.nb.col,forcefill=FALSE)
-legend(-84,34,format(apply(cbind(c(0,0.25,0.5,0.75,1),c(1,0.75,0.5,0.25,0)),1,function(x) sum(x*exp(nc.smr2.dist.nb$coef[1:2]))),
-                     digits=4),fill=c(rgb(1,0,0),rgb(0.75,0,0.25),rgb(0.5,0,0.5),rgb(0.25,0,0.75),rgb(0,0,1)))
+legend(-84,34,format(apply(cbind(c(0,0.25,0.5,0.75,1),c(1,0.75,0.5,0.25,0)),1,
+                           function(x) sum(x*exp(nc.smr2.dist.nb$coef[1:2]))),digits=4),
+       fill=c(rgb(1,0,0),rgb(0.75,0,0.25),rgb(0.5,0,0.5),rgb(0.25,0,0.75),rgb(0,0,1)))
 
 ## The second model however uses a specific function of the distance between counties which may not
 ## always be appropriate.

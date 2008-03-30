@@ -1,4 +1,4 @@
-                                        #(C) 2002-2003 Bernard Boulerice
+                                        #(C) 2002-2008 Bernard Boulerice
                                         #March  2003
                                        
 
@@ -8,7 +8,7 @@
 # computes the joint density of the combined vector and must be assigned.
 # The two functions name must be quoted.
 # The length of the data vector (number of variables)
-# to which they apply is specified through nt1 and nvar2.
+# to which they apply is specified through nvar1 and nvar2.
 # If dname1 and/or dname2 already computes the
 # joint density of the vector to which they apply this must be
 # specified with is.joint1 and is.joint2. If you want to combine more

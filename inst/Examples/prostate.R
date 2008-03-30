@@ -1,6 +1,6 @@
 ## This example concerns the prostate clinical trial data of
 ## Byar and Green and is available at Statlib in 
-## http://lib.stat.cmu.edu/datasets/Andrews/T46.1.
+## http://lib.stat.cmu.edu/datasets/Andrews/T46.1
 ## This is a large data set with a lot of variables of mixed
 ## types (continuous, categorical) and it was used by
 ## Jorgensen and Hunt to illustrate the MULTIMIX
@@ -9,35 +9,44 @@
 ## Here we use the more complete first version of this data set
 ## to illustrate the MULTIMIX approach in MOC. Note that the data set
 ## contain an AP (serum prostatic acid phosphatase) measurement of 9999
-## which look like an extreme outlier and can be tought to be a miscoding
+## which look like an extreme outlier and can be taught to be a miscoding
 ## of missing value which are -9999. However this value was retained in the
 ## analysis of the previous authors, AP is log transformed and this
 ## value then appears to be less influential. The previous authors also
-## removed all subjects with missing values, which is highly questionnable,
+## removed all subjects with missing values, which is highly questionable,
 ## here we are going to use all subjects.
 
-prostate <- read.table("DataBank/prostate.dat",header=TRUE)  ## read your data here and make the appropriate coding
+prostate <- read.table("DataBank/prostate.dat",header=TRUE)  #read your data here and make
+                                                             #the appropriate coding
+
 prostate <- transform(prostate,cons=1,log.ap=log(ap),sqrt.sz=sqrt(sz)) 
 
-library(moc)    ## load the essential
+library(moc)    #load the essential
 
-## We need the multinomial disribution for categorical variables
+## We need the multinomial distribution for categorical variables
 
-dmnom <-                                                     ## this version of the multinomial assumes that x is a set
-function(x,prob,...) {apply(prob*x+1-x,1,prod,na.rm=TRUE)}   ## of indicator variables and p is the corresponding matrix
-                                                             ## of probabilities ( one colum for each category).
-                                                             ## It returns the joint density of the indicators.
+## The first version of the multinomial assumes that x is a set
+## of indicator variables and p is the corresponding matrix
+## of probabilities (one column for each category).
+## It returns the joint density of the indicators.
+dmnom <-                                                     
+function(x,prob,...) {apply(prob*x+1-x,1,prod,na.rm=TRUE)}
+
 mnom.mu <- function(p) {inv.glogit(p)}
 
-dmnom.cat <- function(x,mu=1,shape=1,extra) {extra[,x]}   ## this version of the multinomial assumes that x
-                                                          ## is the categorical variable coded from 1 to ncat
-                                                          ## The extra parameter has ncat columns corresponding
-                                                          ## to each category.
-## We need the univariate normal for continuous variables
+
+## The second version of the multinomial assumes that x
+## is the categorical variable coded from 1 to ncat.
+## The extra parameter has ncat columns corresponding
+## to each category.
+dmnom.cat <- function(x,mu=1,shape=1,extra) {extra[,x]}
+
+
+## We also need the univariate normal for continuous variables
 dnormal <-
 function(x,mu,sig,...) {dnorm(x,mu,sig)}
 
-## and the multivariate normal too, parametrized with the inverse of the Cholesky
+## and the multivariate normal too. Which is parametrized with the inverse of the Cholesky
 ## decomposition of the correlation matrix in the extra parameters.
 
 mvnorm <- function(x,mu,sigma,extra)
@@ -47,19 +56,20 @@ mvnorm <- function(x,mu,sigma,extra)
   lind <- upper.tri(ss)
   for ( i in 1:dim(x)[1]) {
       ss[lind] <- extra[i,]
-      y[i,] <- t(ss)%*%y[i,]
+      na.ind <- is.na(y[i,])
+      y[i,!na.ind]] <- t(ss)[!na.ind,!na.ind]%*%y[i,!na.ind]
   }
   apply(dnorm(y)/sigma,1,prod,na.rm=TRUE)
 }
 
 
-mu.mvnorm <- function(pmu) rbind(pmu) ## mvnorm mean base function
+mu.mvnorm <- function(pmu) rbind(pmu) #mvnorm mean base function
 
-sig.mvnorm <- function(psh) rbind(exp(psh)) ## mvnorm std.dev base function
+sig.mvnorm <- function(psh) rbind(exp(psh)) #mvnorm std.dev base function
 
-extra.mvnorm <- function(pext) rbind(pext)  ## mvnorm inverse of cholesky (of correlation) base function
+extra.mvnorm <- function(pext) rbind(pext)  #mvnorm inverse of Cholesky (of correlation) base function
 
-## The first model assumes local indepence of all variables given the mixture group.
+## The first model assumes local independence of all variables given the mixture group.
 
 ## We first construct the indicator variables for pf, hx, ekg and bm
 prostate$pf.ind <- outer(unclass(prostate$pf),na.omit(unique(unclass(prostate$pf))),"==")*1
@@ -110,9 +120,10 @@ moc.prost <- moc(cbind(prostate$pf.ind, prostate$hx.ind,prostate$ekg.ind,prostat
                  gmu = multimu, gshape = multisig, pgmu = prost.mustart, 
                  pgshape = prost.sigstart, pgmix = 0,gradtol=1e-3)
 
-save(moc.prost,file="prost_moc1.RData",compress=TRUE)  ## it takes a long time to estimate so you probably want to save it.
+save(moc.prost,file="prost_moc1.RData",compress=TRUE)  #it takes a long time to estimate
+                                                       #so you probably want to save it.
 
-## As we can see only the tree last continuous variables and the proportions of bm.ind
+## As we can see only the three last continuous variables and the proportions of bm.ind
 ## substantially differs between those two groups.
 plot(moc.prost,scale=TRUE)
 
@@ -126,17 +137,11 @@ cov.wt(tmp,wt=post(moc.prost)[-na.action(tmp),2],cor=TRUE)$cor
 dmulti.mv <-
 function(x,mu,sig,extra)  {apply(cbind(dmnom(x[,1:14],mu[,1:14]),
                                  dnorm(x[,-c(1:14,17:18)],mu[,c(15:16,19:22)],sig[,c(15:16,19:22)]),
-                                 mvnorm(x[,17:18],mu[,17:18],sig[,17:18],extra)),1,prod,na.rm=TRUE)}  ## correlation between sbp dbp
+                                 mvnorm(x[,17:18],mu[,17:18],sig[,17:18],extra)),1,prod,na.rm=TRUE)}
+                                                                        #correlation between sbp dbp
 
-multiextra <-  list(
-                 G1 = function (p) 
-             {
-                 rbind(p[1])
-             },
-                 G2 = function (p) 
-             {
-                 rbind(p[2])
-             })
+multiextra <-  list(G1 = function (p) { rbind(p[1]) },
+                    G2 = function (p) { rbind(p[2]) })
 
 moc.prost.2 <- moc(cbind(prostate$pf.ind, prostate$hx.ind,prostate$ekg.ind,prostate$bm.ind,
                  as.matrix(prostate[,c("age", "wti", "sbp", "dbp", "hg", "sg","sqrt.sz","log.ap")])),
@@ -146,43 +151,39 @@ moc.prost.2 <- moc(cbind(prostate$pf.ind, prostate$hx.ind,prostate$ekg.ind,prost
                  pgextra = c(-0.2,-0.2) ,pgmix = moc.prost$coef[53],gradtol=1e-3)
 
 save(moc.prost.2,file="prost_moc2.RData",compress=TRUE) 
+
 ## The corresponding correlations in each mixture are
 cov2cor(solve(t(matrix(c(1,0,moc.prost.2$coef[53],1),2,2))%*% (matrix(c(1,0,moc.prost.2$coef[53],1),2,2))))
 cov2cor(solve(t(matrix(c(1,0,moc.prost.2$coef[54],1),2,2))%*% (matrix(c(1,0,moc.prost.2$coef[54],1),2,2))))
-
 ## taking account of those correlations gives a better likelihood
 
 AIC(moc.prost,moc.prost.2,k="BIC")
 
 ## but does not appear to have much effect (or benefits) on other aspects
-## of the fit to the data, the resulting classification are also very
-## similar
+## of the fit to the data. The resulting classification are also very
+## similar.
 
-source(system.file("Utils","combine.moc.R",package="moc"))  ##load some utility functions
+source(system.file("Utils","combine.moc.R",package="moc"))  #load some utility functions
 combine.prob(moc.prost,moc.prost.2)
 
-## As a last example we add a correlation between wti and hg and a dependance on bm.ind, since bm.ind are indicators
-## of a categirical variable the dependance of wti and hg on bm is modeled by a location factor on the continuous
-## variables (mean differences)
+## As a last example, we add a correlation between wti and hg and a dependence on bm.ind,
+## since bm.ind are indicators of a categorical variable the dependence of wti and hg on bm
+## is modeled by a location factor on the continuous variables (mean differences)
 
 dmulti.mv.2 <-
 function(x,mu,sig,extra)  {apply(cbind(dmnom(x[,1:14],mu[,1:14]),
                            dnorm(x[,-c(1:14,16:19)],mu[,c(15,20:22)],sig[,c(15,20:22)]),
-                           mvnorm(x[,17:18],mu[,17:18],sig[,17:18],cbind(extra[,1])),   ## correlation between sbp dbp
-                           mvnorm(x[,c(16,19)],apply(mu[,c(16,19)],2,"+",cbind(extra[,3])*x[,14]),sig[,c(16,19)],cbind(extra[,2]))), 
-                           1,prod,na.rm=TRUE)}               ## corr. wti and hg and location with bm
-multiextra.2 <-  list(
-                 G1 = function (p)
-             {
-                 rbind(p[1:3])
-             },
-                 G2 = function (p) 
-             {
-                 rbind(p[4:6])
-             })
+                           mvnorm(x[,17:18],mu[,17:18],sig[,17:18],
+                                  cbind(extra[,1])), #correlation between sbp dbp
+                           mvnorm(x[,c(16,19)],apply(mu[,c(16,19)],2,"+",
+                           cbind(extra[,3])*x[,14]), #corr. wti and hg and location with bm
+                                  sig[,c(16,19)],cbind(extra[,2]))),
+                           1,prod,na.rm=TRUE)}
+multiextra.2 <-  list(G1 = function (p) { rbind(p[1:3]) },
+                      G2 = function (p) { rbind(p[4:6]) })
 
 ## thus p[1] and p[4]  holds the parameters for the correlation between sbp dbp in group 1 and 2,
-## p[2], p[5] are for the correlation between wti and hg in ther respective group,
+## p[2], p[5] are for the correlation between wti and hg in their respective group,
 ## while p[3] and p[4] stands for the mean differences of wti and hg between the two
 ## categories of bm in each mixture group.
 
@@ -192,3 +193,7 @@ moc.prost.2.3 <- moc(cbind(prostate$pf.ind, prostate$hx.ind,prostate$ekg.ind,pro
                  gmu = multimu, gshape = multisig, gextra=multiextra.2, check.length=FALSE,
                  pgmu = moc.prost.2$coef[1:36], pgshape = moc.prost.2$coef[37:52],
                  pgextra = c(moc.prost.2$coef[53],0,0,moc.prost.2$coef[54],0,0) ,pgmix = moc.prost.2$coef[55],gradtol=1e-3)
+
+save(moc.prost.2.3,file="prost_moc23.RData",compress=TRUE) #keep the results
+
+moc.prost.2.3

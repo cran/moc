@@ -1,11 +1,11 @@
 The examples in this directory uses data sets
-available on the internet and previously analyzed
+available on the Internet and previously analyzed
 by various authors so you can validate the results.
 The original data sets are not included here, you have
 to obtain them by yourself before running the programs
 using one of the stated source.
 
-Note however that data on the internet are often
+Note however that data on the Internet are often
 not original data and have often been manipulated or
 cleaned in some undocumented manner. Moreover, sampling
 design and procedures are not always available. So don't

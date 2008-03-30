@@ -9,11 +9,11 @@
 \title{Information criterions for MOC models.}
 
 \description{
-  \code{AIC.moc} generates a table of \eqn{\log(Likelihood)}, AIC, BIC ,
+  \code{AIC.moc} generates a table of \eqn{\log(Likelihood)}, AIC, BIC,
   ICL-BIC and entropy values along with the degrees of freedom of multiple \code{moc}
   objects. 
 
-  \code{logLik} returns on object of class \code{logLik} containing the
+  \code{logLik} returns an object of class \code{logLik} containing the
   \eqn{\log(Likelihood)}, degrees of freedom and number of observations.
   
   \code{loglike.moc} computes the \eqn{\log(Likelihood)} of a \code{moc}
@@ -34,8 +34,8 @@
   Standardized entropy is just \eqn{entropy/\log(k)} which lies in the
   interval \eqn{[0,1]}. The total and mean mixture entropy are the
   weighted sum and mean of the mixture probabilities entropy of all
-  subjects. These are computed for both the prior ( without knowledge of
-  the response patterns ) and the posterior mixture probabilities ( with
+  subjects. These are computed for both the prior (without knowledge of
+  the response patterns) and the posterior mixture probabilities (with
   knowledge of the responses).
   
   The default method \code{entropy.default} compute entropy and
@@ -103,7 +103,7 @@ loglike.moc(object, parm = object$coef, evaluate = FALSE)
 
 \note{
   Be aware that degrees of freedom (df) for mixture models are usually
-  useless ( if not meaningless ) and likelihood-ratio of
+  useless (if not meaningless) and likelihood-ratio of
   \emph{apparently} nested models often doesn't converge to a
   Chi-Square with corresponding df.
 }   

@@ -1,4 +1,4 @@
-##Copyright (C) 2003-2005 Bernard Boulerice
+##Copyright (C) 2003-2008 Bernard Boulerice
 
 moc.gui <- function() {
                                         # Load required packages
@@ -12,7 +12,7 @@ mu.Groups <- tclVar("1")
 shape.Groups <- tclVar("1")
 extra.Groups <- tclVar("1")
 
-## Set various moc options
+## Set various MOC options
 is.joint <- tclVar("0")
 wtvar <- tclVar("Weight")
 scale.weight <- tclVar("0")
@@ -428,7 +428,8 @@ makedensity <- function()
                            lind <- upper.tri(ss)
                            for ( i in 1:dim(x)[1]) {
                              ss[lind] <- extra[i,]
-                             y[i,] <- t(ss)%*%y[i,] }
+                             na.ind  <- is.na(y[i,])
+                             y[i,!na.ind] <- t(ss)[!na.ind,!na.ind]%*%y[i,!na.ind] }
                            apply(dnorm(y)/sigma,1,prod,na.rm=TRUE) })
     if(!as.logical(tclObj(is.joint))) {
       type <- dist.rlst[["ALL"]][1]
