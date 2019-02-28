@@ -1,9 +1,16 @@
 ## Fitting the model in McLachlan & Peel pp.155-157 on fabric data
 ## available at http://www.maths.uq.edu.au/~gjm/DATA/mmdata.html
 
-library(moc)
+require(moc)
 
-fabric <-  read.table("DataBank/Fabric.dat",header=TRUE)  #change with your own reading command
+	#If you have an internet connection
+        #fabric <-  read.table("http://www.maths.uq.edu.au/~gjm/DATA/Fabric.dat",
+        #header=FALSE,skip=1,col.names=c("Length_of_Roll","Number_of_Faults"))
+
+#else fabric <-  read.table("DataBank/Fabric.dat",header=TRUE)  #change with your own reading command
+
+fabric.file <- system.file("Examples","fabric.RData",package="moc",mustWork=TRUE)
+load(fabric.file)
 
 ## It is used here to illustrate the mixture of Poisson regression
 ## with a random intercept that is

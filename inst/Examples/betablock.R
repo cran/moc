@@ -10,8 +10,12 @@
 ## with randomization and is a good example of the use of mixture as
 ## a non-parametric random effect logistic regression.
 
-bbloc <- read.table("DataBank/Beta_Blocker.dat",header=TRUE,skip=1)#change to read your own data
-library(moc)
+	#If you have an internet connection
+        #bbloc <- read.table("http://www.maths.uq.edu.au/~gjm/DATA/Beta.dat",header=TRUE,skip=1)
+
+require(moc)
+beta.file <- system.file("Examples","bbloc.RData",package="moc",mustWork=TRUE)
+load(beta.file)
 
 ## First, we simply reproduce the fixed treatment effect with a random intercept 
 ## as in McLachlan & Peel (2000) pp. 165-166
@@ -78,7 +82,7 @@ sd3
 
 ## This could be compared to the usual normal random effect. To make such a model in MOC
 ## we need the quadrature points and weights for the normal which are available in the
-## file system("Utils","rasch.R",package="moc"). A five point quadrature is usually enough
+## file system.file("Utils","rasch.R",package="moc"). A five point quadrature is usually enough
 ## to estimate the normal integral with sufficient precision.
 
 source(system.file("Utils","rasch.R",package="moc"))
@@ -165,3 +169,4 @@ bbloc.moc3.rs
 ## So the ICL-BIC still favors the simple random intercept model.
 
 AIC(bbloc.moc3,bbloc.moc3.rs,k="BIC")
+

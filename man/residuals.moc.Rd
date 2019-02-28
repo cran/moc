@@ -126,7 +126,7 @@ npmle.gradient(object, parm = object$coef, gradient = TRUE,
   \bold{87}, pp. 785--794.  
 }
    
-\author{Bernard Boulerice <\email{Bernard.Boulerice@sympatico.ca}>}
+\author{Bernard Boulerice <\email{bernard.boulerice.bb@gmail.com}>}
 
 \seealso{\code{\link{moc}}, \code{\link{plot.moc}}, \code{\link{print.moc}},
   \code{\link{AIC.moc}}, \code{\link{plot.residuals.moc}}}

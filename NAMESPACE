@@ -1,5 +1,32 @@
-# Default NAMESPACE created by R
-# Remove the previous line if you edit this file
+useDynLib(moc, .registration = TRUE)
 
-# Export all names
-exportPattern(".")
+export(moc, update.moc, post, post.moc, fitted.moc, residuals.moc, print.moc, 
+  npmle.gradient, confint.moc, AIC.moc, entropy, entropy.default, entropy.moc,
+  logLik.moc, loglike.moc, obsfit.moc, plot.moc, density.moc, profiles.postCI, 
+  profilesplot, profilesplot.moc, entropyplot, entropyplot.moc,
+  plot.residuals.moc, inv.glogit, glogit, mix.colors.moc, mocUtils)
+
+importFrom("grDevices", "col2rgb", "gray", "rainbow", "rgb")
+importFrom("graphics", "abline", "lines", "matlines", "matplot",
+             "matpoints", "mtext", "pairs", "par", "polygon",
+             "sunflowerplot","plot")
+importFrom("stats", "approx", "as.formula", "deriv", "ecdf", "na.omit",
+           "nlm", "pchisq", "qnorm", "sd", "weighted.mean","update",
+           "fitted","residuals","confint","AIC","logLik","density")
+
+S3method(update,moc)
+S3method(post,moc)
+S3method(fitted,moc)
+S3method(residuals,moc)
+S3method(print,moc)
+S3method(confint,moc)
+S3method(AIC,moc)
+S3method(entropy,moc)
+S3method(entropy,default)
+S3method(logLik,moc)
+S3method(profilesplot,moc)
+S3method(entropyplot,moc)
+S3method(plot,residuals.moc)
+S3method(plot,moc)
+S3method(density,moc)
+

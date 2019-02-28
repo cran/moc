@@ -1,6 +1,6 @@
 % -*- mode: noweb; noweb-default-code-mode: R-mode; -*-
 
-% Copyright (C) 2002-2008  Bernard Boulerice
+% Copyright (C) 2002-2019  Bernard Boulerice
 % This file is a template, you can use it without modification.
 % You don't have permission to modify it but you can modify
 % any copy of it as long as you rename the file and change
@@ -17,16 +17,18 @@
 % moc.sweave <- list(moc.name="moc.name", author="your name", email="your email",
 % main.title="moc.name",digits=5, ...)
 % Sweave(system.file("Sweave","moc.Rnw", package = "moc"))
-% system("latex moc.tex")    #may be run again to resolve references
-% system("pdflatex moc.tex") #generate a pdf file
+% tools::texi2pdf("moc.tex") #or if problems
+% system("pdflatex moc.tex") #may be run again to resolve references
+% system("latex moc.tex")    #alternatively generate a dvi file
 % system("xdvi moc.dvi")     #start your dvi previewer from R
 
 \documentclass[]{article}
 \usepackage[]{hyperref}
+\usepackage[]{graphicx}
 
 
 \usepackage{Sweave}
-\SweaveOpts{echo=FALSE,width=6,height=6}
+\SweaveOpts{echo=FALSE,width=7,height=7}
 
 \begin{document}
 \setkeys{Gin}{width=6in,height=6in}
@@ -57,7 +59,8 @@ if(is.null(.moc.sweave$model.description)) .moc.sweave$model.description<-""
                                         # for example moc.sweave$model.description<-"\\input{mocinput.tex}" will include
                                         # the file mocinput.tex which should be a normal LaTeX file (single \).
 @
-\title{\href{mailto:Bernard.Boulerice@sympatico.ca}{MOC} Mixtures: Report on \Sexpr{noquote(.moc.sweave$main.title)} model} 
+
+\title{\href{mailto:bernard.boulerice.bb@gmail.com}{MOC} Mixtures: Report on \Sexpr{noquote(.moc.sweave$main.title)} model} 
 \author{\href{mailto:\Sexpr{noquote(.moc.sweave$email)}}{\Sexpr{noquote(.moc.sweave$author)}}} 
 
 \maketitle
@@ -66,10 +69,10 @@ if(is.null(.moc.sweave$model.description)) .moc.sweave$model.description<-""
 %\listoftables
 \listoffigures
 
-\section{Model estimates}
+\section{Model Fit}
 
 <<results=hide>>=
-library("moc")
+require("moc")
 source(system.file("Sweave","moc_sweave.R", package = "moc"),local=TRUE)
 if(.moc.sweave$obsfit.along != "") {
   obsfit.table <- eval(parse(text=paste("obsfit.moc(",.moc.sweave$moc.name,",along=",.moc.sweave$obsfit.along,")")))
@@ -89,10 +92,32 @@ subjects with \Sexpr{sum(eval(.moc.sweave$moc.name)$nvar)} observations each.
 There are currently \Sexpr{noquote(paste(apply(cbind(is.na(eval(eval(.moc.sweave$moc.name)$resp))),2,sum),collapse=', '))}
 missing values in the respective observation.
 
+The following table gives information theory criterions to evaluate
+the fit of the model. The entropy of the model is an index of mixture
+separation while \emph{ICL-BIC} is an entropy corrected \emph{BIC}. 
+Further details concerning these criterions can
+be found in \cite{MP:2000} and \cite{BCL:2000}.
+
+%\begin{table}[hh]
+%\caption{Information criterions}
+%\label{tab:fit}
+\begin{center}
+
+<<results=tex>>=
+eval(parse(text=paste(
+"TeXFitTable.moc(",deparse(c(paste(.moc.sweave$moc.name),.moc.sweave$fit.names)),",",
+"lbl=",deparse(.moc.sweave$fit.lbl),",digits=",.moc.sweave$digits,")")))
+
+@
+
+\end{center}
+
 <<results=tex>>=
 cat(.moc.sweave$model.description,"\n")
 
 @
+
+\section{Model Estimates}
 
 The following table shows the maximum likelihood estimates of the
 \Sexpr{sum(eval(.moc.sweave$moc.name)$npar)} parameters in the model.
@@ -145,7 +170,7 @@ TeXObsfitMeanTable.moc(obsfit.table,digits=.moc.sweave$digits,fbox=.moc.sweave$o
 \end{center}
 %\end{table}
 
-\begin{figure}[f]
+\begin{figure}[p]
 \begin{center}
 
 <<fig=TRUE>>=
@@ -160,7 +185,7 @@ group.colors=.moc.sweave$group.colors)
 \end{center}
 \end{figure}
 
-\begin{figure}[f]
+\begin{figure}[p]
   \begin{center}
 
 <<fig=TRUE>>=
@@ -179,7 +204,7 @@ group.colors=.moc.sweave$group.colors)
 %\begin{center}
 <<results=tex>>=
 if(eval(.moc.sweave$moc.name)$groups > 1){
-cat("\\begin{figure}[f]\n\\begin{center}\n")
+cat("\\begin{figure}[p]\n\\begin{center}\n")
 }
 <<fig=TRUE>>=
 if(eval(.moc.sweave$moc.name)$groups > 1){
@@ -190,36 +215,11 @@ if(eval(.moc.sweave$moc.name)$groups > 1){
 cat("\\caption{Subjects posterior probabilities}\n")
 cat("\\label{fig:postprob}\n")
 cat("\\end{center}\n\\end{figure}\n")
+rm(.moc.sweave)
 }
 
 @
-%\caption{Subjects posterior probabilities}
-%\label{fig:postprob}
-%\end{center}
-%\end{figure}
-              
-\section{Model Fit}
-The following table gives information theory criterions to evaluate
-the fit of the model. The entropy of the model is an index of mixture
-separation while \emph{ICL-BIC} is an entropy corrected \emph{BIC}. 
-Further details concerning these criterions can
-be found in \cite{MP:2000} and \cite{BCL:2000}.
 
-%\begin{table}[hh]
-%\caption{Information criterions}
-%\label{tab:fit}
-\begin{center}
-
-<<results=tex>>=
-eval(parse(text=paste(
-"TeXFitTable.moc(",deparse(c(paste(.moc.sweave$moc.name),.moc.sweave$fit.names)),",",
-"lbl=",deparse(.moc.sweave$fit.lbl),",digits=",.moc.sweave$digits,")")))
-rm(.moc.sweave)
-
-@
-
-\end{center}
-%\end{table}
 
 \section*{}
 \begin{thebibliography}{99}

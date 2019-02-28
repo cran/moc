@@ -1,0 +1,22 @@
+[TODO]
+	Examples Clustered, rash (IRT) et SEM et lha(?).
+[TODO]
+	vérifier que les contraintes de update.moc sont bien gérées et correspondent 
+	à la documentation dans update.moc                     
+
+[TODO]
+	vérifier mvNorm et son utilisation (wine,  prostate et moc.gui)
+
+[TODO]
+	documenter moc_Clustered.R (?moc_clus, Clustered, lha in sids_smr)
+[TODO]
+	terminer mocModel
+	terminer mocSweave (?appeler mocReport?)
+
+[TODO]
+	moc.gui(): reparametrize extra for multinormal in moc-gui and wine example
+		   and allow for different param (see moc_sem.R)
+
+[TODO: En construction]
+	redéfinir les objets de mocModel avec de vrais objets S4 et les inclure dans moc.gui
+

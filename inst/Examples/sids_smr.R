@@ -1,14 +1,17 @@
 ## This example deals with the use of mixture model to obtain empirical Bayes estimates
 ## for Poisson rates in rare disease mapping.
+
 ## The data consist of sudden infant death syndrome counts in 100 counties in north Caroline
-## and are available at http://sal.agecon.uiuc.edu/datasets/sids.zip
+## and were available at http://spatial.uchicago.edu/sample-data ,
 ## and also in the examples of Bugs (http://www.mrc-bsu.cam.ac.uk/bugs/).
-## The version we use here is nc.sids in package=spdep since it is very complete
+
+## The version we use here is very complete
 ## with North Carolina maps and centroids.
 ## In this example we only use the 1974 data.                   
 
-library(moc)                   #first load the required moc library
-data(nc.sids,package="spdep")  #and the data.
+require(moc)                   #first load the required moc library
+ncSids.file <- system.file("Examples","ncSids.RData",package="moc",mustWork=TRUE)
+load(ncSids.file)              #and the data.
 
 ## Poisson distribution is appropriate for counts of rare events.
 
@@ -26,10 +29,10 @@ gmu.smr.sids <- list(G1=function(p) smr.ecases(p[1],nc.sids$ecases),
                      G3=function(p) smr.ecases(p[3],nc.sids$ecases),
                      G4=function(p) smr.ecases(p[4],nc.sids$ecases))
 
-## In fact it is coded such that the analysis corresponds to that of the
+## In fact it is coded such that the analysis corresponds to the
 ## standardized mortality rate (SMR = O/E : observed cases/expected cases)
-## which we know is highly sensitive to the size of the county extreme SMR
-## having much chances to appear in smaller counties. As illustrated by the
+## which we know is highly sensitive to the size of the county: extreme SMR
+## having elevated chances to appear in smaller counties. As illustrated by the
 ## following plot:
 plot(nc.sids$ecases,nc.sids$SID74/nc.sids$ecases)
 
@@ -69,11 +72,11 @@ lines(c(0,max(nc.sids$ecases)),exp(nc.smr2$coef[2])*c(1,1))
 ## to map on the counties.
 smr2.col <- mix.colors.moc(nc.smr2,group.colors=c("blue","red"))
 
-library(maptools)   
-plot(sidspolys, main="SMR_EB of SIDS in North Carolina",border="grey",smr2.col,forcefill=FALSE)
+#library(maptools)   
+#plot(sidspolys, main="SMR_EB of SIDS in North Carolina",border="grey",smr2.col,forcefill=FALSE)
 ## If you don't use the library maptools the following commands are equivalent.
-#  plot(attr(sidspolys, "maplim"),type="n",asp=1)
-#  for(i in 1:100) polygon(sidspolys[[i]], border="grey",col=smr2.col[i])
+plot(attr(sidspolys, "maplim"),type="n",asp=1)
+for(i in 1:100) polygon(sidspolys[[i]], border="grey",col=smr2.col[i])
 legend(-84,34,format(apply(cbind(c(0,0.25,0.5,0.75,1),c(1,0.75,0.5,0.25,0)),1,
                            function(x) sum(x*exp(nc.smr2$coef[1:2]))),digits=4),
        fill=c(rgb(1,0,0),rgb(0.75,0,0.25),rgb(0.5,0,0.5),rgb(0.25,0,0.75),rgb(0,0,1)))
@@ -103,9 +106,9 @@ AIC(nc.smr2,nc.smr2.nb,k="BIC")
 ## Mapping the empirical posterior SMR estimates again
 smr2.nb.col <- mix.colors.moc(nc.smr2.nb,group.colors=c("blue","red"))
 
-plot(sidspolys, main="SMR_EB_NB of SIDS in North Carolina",border="grey",smr2.nb.col,forcefill=FALSE)
-legend(-84,34,format(apply(cbind(c(0,0.25,0.5,0.75,1),c(1,0.75,0.5,0.25,0)),1,function(x) sum(x*exp(nc.smr2.nb$coef[1:2]))),
-                     digits=4),fill=c(rgb(1,0,0),rgb(0.75,0,0.25),rgb(0.5,0,0.5),rgb(0.25,0,0.75),rgb(0,0,1)))
+#plot(sidspolys, main="SMR_EB_NB of SIDS in North Carolina",border="grey",smr2.nb.col,forcefill=FALSE)
+#legend(-84,34,format(apply(cbind(c(0,0.25,0.5,0.75,1),c(1,0.75,0.5,0.25,0)),1,function(x) sum(x*exp(nc.smr2.nb$coef[1:2]))),
+#                     digits=4),fill=c(rgb(1,0,0),rgb(0.75,0,0.25),rgb(0.5,0,0.5),rgb(0.25,0,0.75),rgb(0,0,1)))
 
 ## now shows more spatial homogeneity and the values shows that
 ## we have achieved slightly better shrinkage.
@@ -121,6 +124,7 @@ legend(-84,34,format(apply(cbind(c(0,0.25,0.5,0.75,1),c(1,0.75,0.5,0.25,0)),1,fu
 ## to be inversely proportional to their distance. A simple way to
 ## achieve this would be to compute for each county, the weighted SMR of the other counties
 ## with the weights being the inverse of the squared distance between the counties.
+#sidscents <- cbind(nc.sids$x,nc.sids$y)
 sids.dist.nb <- t(apply(sidscents,1,function(x) apply((x-t(sidscents))^2,2,sum)))
 for(i in 1:100) sids.dist.nb[i,-i] <-  1/sids.dist.nb[i,-i]/sum(1/sids.dist.nb[i,-i])
 
@@ -133,14 +137,15 @@ nc.smr2.dist.nb <- moc(nc.sids$SID74, density = poiss, groups=2, gmu = gmu.smr.s
     gmixture=smr.mix.dist.nb,pgmu =  nc.smr2$coef[1:2], pgmix=c(nc.smr2$coef[3],0.1))
 
 nc.smr2.dist.nb
-AIC(nc.smr2,nc.smr2.nb,nc.smr2.dist.nb,k="BIC")
-entropy(nc.smr2,nc.smr2.nb,nc.smr2.dist.nb)
+AIC(nc.smr2,nc.smr2.dist.nb,k="BIC")
+entropy(nc.smr2,nc.smr2.dist.nb)
 
 ## As we can see the two spatial models are quite comparable, the second model showing
 ## a slightly smaller prior entropy denoting a stronger spatial prediction resulting
 ## in a little more homogeneity in the SMR mapping.
 smr2.dist.nb.col <- mix.colors.moc(nc.smr2.dist.nb,group.colors=c("blue","red"))
-plot(sidspolys, main="SMR_EB_NB of SIDS in North Carolina",border="grey",smr2.dist.nb.col,forcefill=FALSE)
+plot(attr(sidspolys, "maplim"),type="n",asp=1)
+for(i in 1:100) polygon(sidspolys[[i]], border="grey",col=smr2.dist.nb.col[i])
 legend(-84,34,format(apply(cbind(c(0,0.25,0.5,0.75,1),c(1,0.75,0.5,0.25,0)),1,
                            function(x) sum(x*exp(nc.smr2.dist.nb$coef[1:2]))),digits=4),
        fill=c(rgb(1,0,0),rgb(0.75,0,0.25),rgb(0.5,0,0.5),rgb(0.25,0,0.75),rgb(0,0,1)))

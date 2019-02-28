@@ -5,7 +5,7 @@
 ## Hagenaars (1990) Categorical longitudinal data -- log-linear analysis
 ## of panel, trend and cohort data. Newbury Park : Sage.
 
-library(moc)    #load the essential
+require(moc)    #load the essential
 
 hag90 <-
 structure(c(1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 

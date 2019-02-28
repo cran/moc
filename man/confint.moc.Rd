@@ -139,7 +139,7 @@ profiles.postCI(object, data = NULL, level = 0.95,
   \code{\link{loglike.moc}}, \code{\link{profilesplot}}
 }
 
-\author{Bernard Boulerice <\email{Bernard.Boulerice@sympatico.ca}>}
+\author{Bernard Boulerice <\email{bernard.boulerice.bb@gmail.com}>}
 \keyword{models}
 \keyword{methods}
 \keyword{multivariate}

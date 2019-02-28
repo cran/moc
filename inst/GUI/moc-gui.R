@@ -1,6 +1,22 @@
-##Copyright (C) 2003-2008 Bernard Boulerice
+##Copyright (C) 2003-2019 Bernard Boulerice
 
 moc.gui <- function() {
+# Make temporary help files
+tools::Rd2txt(tools:::fetchRdDB(file.path(system.file(package="moc"),"help","moc"),key="moc"),
+              out=(help1 <- tempfile("help")))
+tools::Rd2txt(tools:::fetchRdDB(file.path(system.file(package="moc"),"help","moc"),key="print.moc"),
+              out=(help2 <- tempfile("help")))
+tools::Rd2txt(tools:::fetchRdDB(file.path(system.file(package="moc"),"help","moc"),key="plot.moc"),
+              out=(help3 <- tempfile("help")))
+tools::Rd2txt(tools:::fetchRdDB(file.path(system.file(package="moc"),"help","moc"),key="AIC.moc"),
+              out=(help4 <- tempfile("help")))
+tools::Rd2txt(tools:::fetchRdDB(file.path(system.file(package="moc"),"help","moc"),key="residuals.moc"),
+              out=(help5 <- tempfile("help")))
+tools::Rd2txt(tools:::fetchRdDB(file.path(system.file(package="moc"),"help","moc"),key="confint.moc"),
+              out=(help6 <- tempfile("help")))
+tools::Rd2txt(tools:::fetchRdDB(file.path(system.file(package="moc"),"help","moc"),key="utils.moc"),
+              out=(help7 <- tempfile("help")))
+
                                         # Load required packages
 require(moc) || warning("You won't be able to run your model: install MOC")
 require(tcltk) || stop("You should install TclTk to run this program")
@@ -13,6 +29,8 @@ shape.Groups <- tclVar("1")
 extra.Groups <- tclVar("1")
 
 ## Set various MOC options
+rout <- tempfile("mocgui") #name of temporary file for capture
+capt.out <- tclVar("0")    #variable to hold option to capture R-command output
 is.joint <- tclVar("0")
 wtvar <- tclVar("Weight")
 scale.weight <- tclVar("0")
@@ -87,7 +105,7 @@ gmu.rlst <- list()
 gshape.rlst <- list()
 gextra.rlst <- list()
 dist.rlst <- list()
-
+None <- "[none]"             #Special empty string for full.list
 
 base<-tktoplevel()
 tkwm.title(base,"Mixtures with MOC")
@@ -103,6 +121,39 @@ optim.frm <- tkwidget( base, "labelframe",text="Algorithm",borderwidth=2, relief
 
 run.message <- tkmessage(optim.frm,textvariable=run.mess,width=510,justify="right",anchor="e")
 
+# Define a Tk pager function with OK and Save buttons
+tkpager.sav <- function(txt,title="",file=FALSE)
+  {
+    if(!is.character(txt) || !is.character(title)) stop("tkpager.sav(txt,title) require character args!\n")
+    if(file) if(!file.exists(txt)) stop(paste("file",txt,"does not exist!\n"))
+    tkprintmoc <- tktoplevel()
+    tkwm.title(tkprintmoc,title)
+    pmoctxt <- tktext(tkprintmoc,wrap="word",bg="grey95")
+    ok.but <- tkbutton(tkprintmoc,text="OK",command=function() tkdestroy(tkprintmoc))
+    save.but <- tkbutton(tkprintmoc,text="Save",command=function(){ofile <-
+                         tclvalue(tkgetSaveFile(parent=tkprintmoc,defaultextension=".out",
+                         initialfile=if(file) txt else "",
+                         filetypes="{{txt} {.txt .out}} {{All files} {*}}"));
+                         writeLines(tclvalue(tkget(pmoctxt,"0.0","end")),con=ofile)})
+    clear.but <- tkbutton(tkprintmoc,text="Clear",command=function(){
+      tkdelete(pmoctxt,"0.0","end")
+      if(file) cat("",file=txt)
+    })
+    scr <- tkscrollbar(tkprintmoc, width=10,orient="vertical",repeatinterval = 5,
+                       command = function(...) tkyview(pmoctxt, ...))
+    tkconfigure(pmoctxt, yscrollcommand = function(...) tkset(scr,...))
+    valtxt <- paste(title,":\n\n",txt)
+    if(file) valtxt <- paste(readLines(con=txt),collapse="\n")
+    tkinsert(pmoctxt,"end",tclvalue(tclVar(valtxt)))
+    tkgrid(ok.but,save.but,clear.but,"x")
+    tkgrid(pmoctxt,scr,sticky="wsn")
+    tkgrid.configure(pmoctxt,columnspan=3,sticky="snew")
+    tkgrid.configure(scr,column=4,sticky="sne")
+    tkgrid.rowconfigure(tkprintmoc,pmoctxt,weight=1)
+    tkgrid.columnconfigure(tkprintmoc,pmoctxt,weight=1)
+    invisible(tkprintmoc)
+  }
+#end tkpager.sav
 
 submit <- function()
 {
@@ -118,7 +169,7 @@ submit <- function()
   if(exists(base.name,envir=.GlobalEnv)) base.name <- paste(base.name,".new",sep="")
   data.name <- paste(base.name,".data",sep="")
   resp.name <- paste(y,".resp",sep="")
-  data.list[[resp.name]] <- as.data.frame(eval(as.name(y)))
+  if(y!="[none]") data.list[[resp.name]] <- as.data.frame(eval(as.name(y)))
   moc.call$y <- parse(text=paste(resp.name,"[,",deparse(as.character(tclObj(resp.sel))),"]"))[[1]]
   nvar <- dim(eval(moc.call$y,env=data.list))[2]
   ns <- dim(eval(moc.call$y,env=data.list))[1]
@@ -192,11 +243,12 @@ submit <- function()
   if(isok=="ok") tryCatch(assign(base.name,eval(eval(as.name(base.name))),envir=.GlobalEnv),
            error=function(e) tkmessageBox(type="ok",message=e[[1]]))
   tclObj(run.mess) <-"Ready"
-  tmpfile <- tempfile("moc")
-  sink(tmpfile)
-  eval(substitute(print(tmp),list(tmp=as.name(base.name))),envir=.GlobalEnv)
-  sink()
-  tkpager(tmpfile,title="MOC",header=as.name(base.name),delete.file=TRUE)
+#  tmpfile <- tempfile("moc")
+#  sink(tmpfile)
+  eval(substitute(valtxt <- paste(capture.output(tmp,append=FALSE),collapse="\n"),
+                  list(tmp=as.name(base.name))),envir=.GlobalEnv)
+#  sink()
+  tkpager.sav(valtxt,title=paste("MOC:",base.name))
   assign("mocid", mocid+1,envir=moc.gui.env)
   refresh()
 }
@@ -216,7 +268,7 @@ refresh <- function()
         tkselection.set(data.listbox,which(as.character(tclObj(datalst))%in%sel)-1)
         tclObj(data.sel) <-  as.character(tclObj(datalst))[as.numeric(tkcurselection(data.listbox))+1]
         tclObj(resp.sel) <-  as.character(tclObj(resplst))[as.numeric(tkcurselection(resp.listbox))+1]
-        tclObj(resplst) <- colnames( eval(substitute(as.data.frame(vnam),list(vnam=as.name(sel)))))
+        if(sel!="[none]") tclObj(resplst) <- colnames( eval(substitute(as.data.frame(vnam),list(vnam=as.name(sel)))))
         tkselection.clear(resp.listbox,0,"end")
         for(i in which(as.character(tclObj(resplst))%in%as.character(tclObj(resp.sel))))
             tkselection.set(resp.listbox,i-1)
@@ -274,26 +326,29 @@ refresh <- function()
 }
 
 endgui<-function() {
+	eval(parse(text=paste("unlink(c(",paste("help",1:7,sep="",collapse=","),"))")))
+        unlink(rout)
 	tkdestroy(base)
 	}
 
 var.summ <- function()
 {
-    tksumm <- tktoplevel()
+#    tksumm <- tktoplevel()
     dataname <- as.character(tclObj(datalst))[as.numeric(tkcurselection(data.listbox))+1]
-    tkwm.title(tksumm,dataname)
-    summtxt <- tktext(tksumm,wrap="word")
-    ok.but <- tkbutton(tksumm,text="OK",command=function() tkdestroy(tksumm))
+#    tkwm.title(tksumm,dataname)
+#    summtxt <- tktext(tksumm,wrap="word")
+#    ok.but <- tkbutton(tksumm,text="OK",command=function() tkdestroy(tksumm))
     if(all(is.na(dataname))) tmp <- cbind("Error"="You have to select some data first !")
     else if(all(is.na(respsel <- as.numeric(tkcurselection(resp.listbox))+1)))
         tmp <- summary(eval(as.name(dataname)))
     else    tmp <- summary(eval(as.name(dataname))[respsel])
     valtxt <- paste(apply(format(rbind(colnames(tmp),unclass(tmp))),
                            1,paste,collapse="  "),collapse="\n")
-    tkinsert(summtxt,"end",valtxt)
-    tkconfigure(summtxt,state="disabled")
-    tkpack(summtxt,side="top",fill="both",expand=TRUE)
-    tkpack(ok.but,side="top")
+#    tkinsert(summtxt,"end",valtxt)
+#    tkconfigure(summtxt,state="disabled")
+#    tkpack(summtxt,side="top",fill="both",expand=TRUE)
+#    tkpack(ok.but,side="top")
+    tkpager.sav(valtxt,paste("Summary:",dataname))
 }
 
 makegfun <- function(rlst,nvar,ns)
@@ -623,19 +678,23 @@ tkadd(moc.menu,"command",label="Summary",underline="0",command=var.summ)
 tkadd(moc.menu,"command",label="Quit",underline="0",command=endgui)
 help.menu <- tkmenu(moc.menu,tearoff="0")
 tkadd(moc.menu,"cascade",label="Help",underline="0",menu=help.menu)
-tkadd(help.menu,"command",label="MOC",underline="0",command=function() tkpager( system.file("help","moc",package="moc"),title="Help",header="moc",delete.file=FALSE))
-tkadd(help.menu,"command",label="Print Methods",underline="0",command=function() tkpager( system.file("help","print.moc",package="moc"),title="Help",header="print.moc",delete.file=FALSE))
-tkadd(help.menu,"command",label="Plot Methods",underline="0",command=function() tkpager( system.file("help","plot.moc",package="moc"),title="Help",header="plot.moc",delete.file=FALSE))
-tkadd(help.menu,"command",label="Information Criterions",underline="0",command=function() tkpager( system.file("help","AIC.moc",package="moc"),title="Help",header="AIC.moc",delete.file=FALSE))
-tkadd(help.menu,"command",label="Residuals & Diagnostics",underline="0",command=function() tkpager( system.file("help","residuals.moc",package="moc"),title="Help",header="residuals.moc",delete.file=FALSE))
-tkadd(help.menu,"command",label="Profiling & Density",underline="0",command=function() tkpager( system.file("help","confint.moc",package="moc"),title="Help",header="confint.moc",delete.file=FALSE))
-tkadd(help.menu,"command",label="Utilities",underline="0",command=function() tkpager( system.file("help","utils.moc",package="moc"),title="Help",header="utils.moc",delete.file=FALSE))
+tkadd(help.menu,"command",label="MOC",underline="0",command=function() tkpager( help1,title="Help",header="moc",delete.file=FALSE))
+tkadd(help.menu,"command",label="Print Methods",underline="0",command=function() tkpager( help2,title="Help",header="print.moc",delete.file=FALSE))
+tkadd(help.menu,"command",label="Plot Methods",underline="0",command=function() tkpager( help3,title="Help",header="plot.moc",delete.file=FALSE))
+tkadd(help.menu,"command",label="Information Criterions",underline="0",command=function() tkpager( help4,title="Help",header="AIC.moc",delete.file=FALSE))
+tkadd(help.menu,"command",label="Residuals & Diagnostics",underline="0",command=function() tkpager( help5,title="Help",header="residuals.moc",delete.file=FALSE))
+tkadd(help.menu,"command",label="Profiling & Density",underline="0",command=function() tkpager( help6,title="Help",header="confint.moc",delete.file=FALSE))
+tkadd(help.menu,"command",label="Utilities",underline="0",command=function() tkpager( help7,title="Help",header="utils.moc",delete.file=FALSE))
 tkadd(help.menu,"command",label="Readme",underline="0",command=function() tkpager( system.file("GUI","moc-gui.Readme",package="moc"),title="Help",header="moc-gui.Readme",delete.file=FALSE))
 tkinsert(help.menu,7,"separator")
+tkadd(moc.menu,"command",label="ShowROut",underline="0",command=function()
+      if(as.logical(tclObj(capt.out))&&file.exists(rout))
+      tkpager.sav(rout,title="R-Command Output",file=TRUE))
 
 ## Choose which data file to load
 load.file <- function() {
-                        fname <- (tclvalue(tkgetOpenFile(filetypes="{{RData} {.RData .Rda .rdata .rda}} {{All files} {*}}")))
+                        fname <- (tclvalue(tkgetOpenFile(filetypes=
+                         "{{RData} {.RData .Rda .rdata .rda}} {{All files} {*}}",parent=base)))
                         if(fname!="") {if(regexpr(".rda",tolower(fname))>0) try(load(fname,env=.GlobalEnv))
                         else assign(fname,import.data(fname),env=.GlobalEnv)}
                         oldfname <- tclvalue(tkget(data.file.name))
@@ -711,12 +770,13 @@ mocplot.menubut <- tkmenubutton(moc.list.frm,text="Moc Object:",relief="raised",
 mocplot.menu <- tkmenu(mocplot.menubut,tearoff="0")
 tkadd(mocplot.menu,"command",label="Print",command=function()
       {mocsel <- as.character(tclObj(moclst))[as.numeric(tclvalue(tkcurselection(moc.listbox)))+1]
-       tmpfile <- tempfile("moc")
-       sink(tmpfile)
-       if (!is.na(mocsel)) eval(substitute(print(tmp),list(tmp=as.name(mocsel))))
-       sink()
-       tkpager(tmpfile,title="MOC",header=as.name(mocsel),delete.file=TRUE)
+       if (!is.na(mocsel) && mocsel!=None) {
+         eval(substitute(valtxt <- paste(capture.output(tmp,append=FALSE),collapse="\n"),
+                         list(tmp=as.name(mocsel))))}
+       else {valtxt <- "No MOC object selected"}
+       tkpager.sav(valtxt,paste("MOC:",mocsel))
      })
+
 mocplotchx.menu <- tkmenu(mocplot.menu,tearoff="0")
 tkadd(mocplotchx.menu,"command",label="Plot",command=function()
       {mocsel <- as.character(tclObj(moclst))[as.numeric(tclvalue(tkcurselection(moc.listbox)))+1]
@@ -795,7 +855,7 @@ moc.scroll <- tkscrollbar( moc.list.frm, orient="vert",
 makethelist <- function()
 {
     temp <- c(ls( name=".GlobalEnv"))
-    full.list <- list()
+    full.list <- list(data=None,cov=None,fun=None,funlst=None,moc=None)
     for( i in 1:length( temp)) {
         if((isvec <- is.vector(get(temp[i]),mode="numeric")) || is.matrix(get(temp[i])) || is.data.frame(get(temp[i])))
             {full.list$data <- c( full.list$data, temp[i])
@@ -821,6 +881,8 @@ resp.listbox <-
 resp.scroll <- tkscrollbar(resp.list.frm,orient="vert",
 			command=function(...)tkyview(resp.listbox,...))
 
+
+## Create the Tk interface
 mocimage <- tkimage.create("photo","moc-logo",
                            file=system.file("GUI","moc-gui.ppm",package="moc"))
 tkpack(tkbutton(data.frm,image="moc-logo",command=submit),side="left",expand="1")
@@ -984,24 +1046,39 @@ mix.label <- tkentry(mix.frm,textvariable=mix.label.val,background="#FFFFFF")
 distmix.label <- tkwidget(distmix.frm,"labelframe",
                           text="R commands: C-RET eval window, MOUSE eval selection",
                           borderwidth=2, relief="ridge")
+rout.but <- tkcheckbutton(distmix.label,text="Capture Output ",variable=capt.out,
+                          command=function() {
+                            if(!as.logical(tclObj(capt.out))) unlink(rout)
+                           })
 distmix.entry <- tktext(distmix.label,width=50,height=12,background="#FFFFFF")
-tkpack(distmix.entry,side="top",fill="both",expand="1")
+tkpack(distmix.entry,rout.but,side="top",fill="both",expand="1")
 
 tkbind(distmix.entry,"<Button-1>",function() tkfocus(distmix.entry))
 tkbind(distmix.entry,"<ButtonRelease-1>",
        function() {selection <- strsplit(tclvalue(tktag.ranges(distmix.entry,"sel"))," ")[[1]]
-                   if(!is.na(selection[1])) eval(parse(text=tclvalue(tkget(distmix.entry,selection[1],selection[2]))),env=.GlobalEnv)
-                                                     refresh()})
-tkbind(distmix.entry,"<Control-Return>",function() { eval(parse(text=tclvalue(tkget(distmix.entry,"1.0","end"))),env=.GlobalEnv)
-                                                     refresh()})
+                   if(!is.na(selection[1])) {
+                     if(as.logical(tclObj(capt.out))) sink(rout,append=TRUE,type="output")
+                     valtxt <- as.character(tclvalue(tkget(distmix.entry,selection[1],selection[2])))
+                     cat(paste(valtxt))
+                     eval(parse(text=valtxt), env=.GlobalEnv)
+                     suppressWarnings(sink())
+                   }
+                     refresh()})
+tkbind(distmix.entry,"<Control-Return>",function() {
+  if(as.logical(tclObj(capt.out))) sink(rout,append=TRUE,type="output")
+  valtxt <- as.character(tclvalue(tkget(distmix.entry,"1.0","end")))
+  cat(paste(valtxt))
+  eval(parse(text=valtxt),env=.GlobalEnv)
+  suppressWarnings(sink())
+  refresh()})
 
 tkpack( tklabel(mix.selgr,text="Groups"),mix.group,side="left")
 tkpack(mix.menu,side="left",after=mix.group)
 tkpack(mix.selgr,side="top")
 tkpack( mix.funscroll,side="top",fill="both",expand="1")
-tkpack(mix.label,tklabel(mix.frm,text="Labels:"),fill="x",side="bottom")
-tkpack(mix.const,tklabel(mix.frm,text="Constraints:"),fill="x",side="bottom")
-tkpack(mix.start,tklabel(mix.frm,text="Starting values:"),fill="x",side="bottom")
+tkpack(mix.label,tklabel(mix.frm,text="Labels:c()"),fill="x",side="bottom")
+tkpack(mix.const,tklabel(mix.frm,text="Constraints:c()"),fill="x",side="bottom")
+tkpack(mix.start,tklabel(mix.frm,text="Starting values:c()"),fill="x",side="bottom")
 
 tkpack(dist.joint,dist.spinbox)
 tkpack(dist.menu,dist.message,anchor="s",after=dist.spinbox)
@@ -1113,9 +1190,9 @@ tkpack(mu.message,anchor="w",after=mu.fun.menu,fill="none")
 
 tkpack( mu.r, side="top",fill="x",expand="1")
 tkpack( mu.l, side="top", after=mu.r,fill="both",expand="1")
-tkpack(mu.label,tklabel(mu.frm,text="Labels:"),fill="x",side="bottom",expand="1")
-tkpack(mu.const,tklabel(mu.frm,text="Constraints:"),fill="x",side="bottom",expand="1")
-tkpack(mu.start,tklabel(mu.frm,text="Starting values:"),fill="x",side="bottom",expand="1")
+tkpack(mu.label,tklabel(mu.frm,text="Labels:c()"),fill="x",side="bottom",expand="1")
+tkpack(mu.const,tklabel(mu.frm,text="Constraints:c()"),fill="x",side="bottom",expand="1")
+tkpack(mu.start,tklabel(mu.frm,text="Starting values:c()"),fill="x",side="bottom",expand="1")
 
 # shape frame
  
@@ -1187,9 +1264,9 @@ tkpack(shape.message,anchor="w",after=shape.fun.menu,fill="none")
 
 tkpack( shape.r, side="top",fill="x",expand="1")
 tkpack( shape.l, side="top", after=shape.r,fill="x",expand="1")
-tkpack(shape.label,tklabel(shape.frm,text="Labels:"),fill="x",side="bottom")
-tkpack(shape.const,tklabel(shape.frm,text="Constraints:"),fill="x",side="bottom")
-tkpack(shape.start,tklabel(shape.frm,text="Starting values:"),fill="x",side="bottom")
+tkpack(shape.label,tklabel(shape.frm,text="Labels:c()"),fill="x",side="bottom")
+tkpack(shape.const,tklabel(shape.frm,text="Constraints:c()"),fill="x",side="bottom")
+tkpack(shape.start,tklabel(shape.frm,text="Starting values:c()"),fill="x",side="bottom")
 
 
 
@@ -1263,9 +1340,9 @@ tkpack(extra.message,anchor="w",after=extra.fun.menu,fill="none")
 
 tkpack( extra.r, side="top",fill="x",expand="1")
 tkpack( extra.l, side="top", after=extra.r,fill="x",expand="1")
-tkpack(extra.label,tklabel(extra.frm,text="Labels:"),fill="x",side="bottom")
-tkpack(extra.const,tklabel(extra.frm,text="Constraints:"),fill="x",side="bottom")
-tkpack(extra.start,tklabel(extra.frm,text="Starting values:"),fill="x",side="bottom")
+tkpack(extra.label,tklabel(extra.frm,text="Labels:c()"),fill="x",side="bottom")
+tkpack(extra.const,tklabel(extra.frm,text="Constraints:c()"),fill="x",side="bottom")
+tkpack(extra.start,tklabel(extra.frm,text="Starting values:c()"),fill="x",side="bottom")
 
 
 

@@ -2,6 +2,8 @@
 \alias{print.moc}
 \alias{fitted.moc}
 \alias{obsfit.moc}
+\alias{coef.moc}
+
 \title{Summary methods for fitted MOC models}
 
 \description{
@@ -10,6 +12,9 @@
   object. The \code{attributes} \emph{parameters} of the functions
   \code{gmu}, \code{gshape}, \code{gextra} and \code{gmixture} will be
   used to label the output.
+
+  \code{coef.moc} returns the coefficients (estimated parameters) of a
+  fitted \code{moc} object.
   
   \code{fitted.moc} computes the expected values for each observation
   of a \code{moc} object using its \code{expected} function.
@@ -22,7 +27,9 @@
 
 \usage{
 
-\method{print}{moc}(x, digits = 5, \dots)
+\method{print}{moc}(x, digits = 5, expand = TRUE, transpose = FALSE, \dots)
+
+\method{coef}{moc}(object, split=FALSE, \dots)
 
 \method{fitted}{moc}(object, \dots)
 
@@ -34,8 +41,16 @@ obsfit.moc(object, along = list(cons = rep(1, object$nsubject)),
  \arguments{
    
    \item{x, object}{ Objects of class \code{moc}.}
+
+   \item{split}{If split is TRUE, returns a list with elements
+     corresponding to mu, shape, extra and mixture parameters.}
    
    \item{digits}{ Number of digits to be printed.}
+
+   \item{expand}{ Expand density, gmu, gshape, gextra, gmixture
+     function body in the print.}
+
+   \item{transpose}{ Transpose fitted.mean and observed.mean in the print.}
    
    \item{along}{ Splitting variable. }
    
@@ -60,7 +75,7 @@ obsfit.moc(object, along = list(cons = rep(1, object$nsubject)),
 
  \value{ All these methods return their results invisibly.}
 
- \author{Bernard Boulerice <\email{Bernard.Boulerice@sympatico.ca}>}
+ \author{Bernard Boulerice <\email{bernard.boulerice.bb@gmail.com}>}
  
  \seealso{\code{\link{moc}}, \code{\link{residuals.moc}}, \code{\link{post.moc}},
    \code{\link{plot.moc}}, \code{\link{AIC.moc}}}

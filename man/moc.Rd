@@ -60,7 +60,9 @@ moc(y, density = NULL, joint = FALSE, groups = 1,
   \item{gmu, gshape, gextra}{ User-specified \code{lists} of functions
     returning the location, shape and extra density parameters for each
     mixture group and observation as a function of the parameters
-    \code{pgmu}, \code{pgshape}, \code{pgextra} and covariates.}
+    \code{pgmu}, \code{pgshape}, \code{pgextra} and covariates. These
+    functions should return values in the proper range expected by the
+    density function.}
 
   \item{gmixture}{ A user-specified function of \code{pgmix}, giving the regression 
     function of the mixture probabilities. The default is the
@@ -72,7 +74,8 @@ moc(y, density = NULL, joint = FALSE, groups = 1,
     Defaults to \code{gmu}.}
 
   \item{pgmu, pgshape, pgextra, pgmix}{ Vector of initial estimates for the
-    parameters of the location, shape, extra and mixture functions.}
+    parameters of the location, shape, extra and mixture
+    functions. Parameters always assume real values from (\code{-Inf},\code{Inf}).}
 
   \item{wt}{ Vector of subjects sampling weights. Currently the program uses
     standard sample-weighted \eqn{\log(Likelihood)} assuming fixed weights. }
@@ -87,11 +90,11 @@ moc(y, density = NULL, joint = FALSE, groups = 1,
     parameters for multivariate normal.}
 
   \item{data}{ An optional \code{data frame} or \code{list} containing
-    some or all variables and functions required to fit the model. It is
-    \code{attach}ed at run time and subsequently by \code{moc}
-    methods applied to the fitted model. Be aware that
-    objects in \code{.GlobalEnv} will mask any object with
-    the same name in \code{data}.}
+    some or all variables and functions required to fit the model. Due
+    to changes from \emph{CRAN}, \code{moc} may have difficulties finding
+    all the objects defined in \code{data}. You might prefer
+    \code{attach}ing it before running \code{moc} and its
+    methods.}
   
   \item{ndigit, gradtol, steptol, iterlim, print.level, \ldots}{
     Arguments controlling \code{nlm}.}
@@ -177,9 +180,9 @@ moc(y, density = NULL, joint = FALSE, groups = 1,
   sampling variances it could be achieved, for example, by including
   \code{moc} model estimation in a \emph{jackknife} loop.
   
-  Be aware that degrees of freedom (df) for mixture models are usually
+  Be aware that degrees of freedom (df) for mixture models may be
   useless (if not meaningless) and likelihood-ratio of
-  \emph{apparently} nested models often does not converge to a
+  \emph{apparently} nested models may not converge to a
   Chi-Square with corresponding df.
 }   
 
@@ -200,7 +203,7 @@ moc(y, density = NULL, joint = FALSE, groups = 1,
   \bold{87}, pp. 785--794.
 }
    
-\author{Bernard Boulerice <\email{Bernard.Boulerice@sympatico.ca}>}
+\author{Bernard Boulerice <\email{bernard.boulerice.bb@gmail.com}>}
 
 \seealso{
   \code{\link{print.moc}}, \code{\link{plot.moc}}, \code{\link{residuals.moc}},
@@ -216,7 +219,7 @@ cnorm.dat<-list()   #This is used as a container for functions and data
 
 # Censored Normal (marginal density)
 
-cnorm.dat$cnorm<-function(x,mu,sig,min,max)
+cnorm<-function(x,mu,sig,min,max)
 {mi<-(x == min)*1
 ma<-(x == max)*1
 mi*pnorm((min-mu)/sig)+ma*(1-pnorm((max-mu)/sig))+
@@ -237,7 +240,7 @@ attr(cnorm.dat$gmu1,"parameters")<-c("  cons1","  cons2","  cons3")
 
 # Expected value of a general censored normal
 
-cnorm.dat$cmean<-function(mu,sig,min,max) {
+cmean<-function(mu,sig,min,max) {
 max-(max-mu)*pnorm((max-mu)/sig)+(min-mu)*pnorm((min-mu)/sig)-
 sig*(dnorm((max-mu)/sig)-dnorm((min-mu)/sig)) }
 
@@ -251,9 +254,9 @@ cnorm.dat$gshape1<- list(
 attr(cnorm.dat$gshape1,"parameters")<-c("  log(std.dev)")
 
 cnorm.dat$cmean1<- list(
-  Group1 = function(p) {cmean(gmu1[[1]](p[1:3]),gshape1[[1]](p[4]),0,14) },
-  Group2 = function(p) {cmean(gmu1[[2]](p[1:3]),gshape1[[2]](p[4]),0,14) },
-  Group3 = function(p) {cmean(gmu1[[3]](p[1:3]),gshape1[[3]](p[4]),0,14) })
+  Group1 = function(p) {cmean(cnorm.dat$gmu1[[1]](p[1:3]),cnorm.dat$gshape1[[1]](p[4]),0,14) },
+  Group2 = function(p) {cmean(cnorm.dat$gmu1[[2]](p[1:3]),cnorm.dat$gshape1[[2]](p[4]),0,14) },
+  Group3 = function(p) {cmean(cnorm.dat$gmu1[[3]](p[1:3]),cnorm.dat$gshape1[[3]](p[4]),0,14) })
 
 moc1<-
 moc(moc.dat[,1:4],density=cnorm1,groups=3,gmu=gmu1,gshape=gshape1,
@@ -271,14 +274,15 @@ cnorm.dat$gshape2<-list(
   Group3 = function(psh) {t(1)\%*\%rep(exp(psh[3]),4)})
 
 cnorm.dat$cmean2<-list(
-  Group1 = function(p) {cmean(gmu1[[1]](p[1:3]),gshape2[[1]](p[4:6]),0,14) },
-  Group2 = function(p) {cmean(gmu1[[2]](p[1:3]),gshape2[[2]](p[4:6]),0,14) },
-  Group3 = function(p) {cmean(gmu1[[3]](p[1:3]),gshape2[[3]](p[4:6]),0,14) })
+  Group1 = function(p) {cmean(cnorm.dat$gmu1[[1]](p[1:3]),cnorm.dat$gshape2[[1]](p[4:6]),0,14) },
+  Group2 = function(p) {cmean(cnorm.dat$gmu1[[2]](p[1:3]),cnorm.dat$gshape2[[2]](p[4:6]),0,14) },
+  Group3 = function(p) {cmean(cnorm.dat$gmu1[[3]](p[1:3]),cnorm.dat$gshape2[[3]](p[4:6]),0,14) })
 
 moc2<-
 moc(moc.dat[,1:4],density=cnorm1,groups=3,gmu=gmu1,gshape=gshape2,
 expected=cmean2,pgmu=moc1$coef[1:3],pgshape=c(rep(moc1$coef[4],3)),
 pgmix=moc1$coef[5:6],data=cnorm.dat,gradtol=1E-4)
+
 }
 # Heterogeneous variances across time
 
@@ -288,9 +292,9 @@ cnorm.dat$gshape3<-list(
   Group3 = function(psh) {exp(t(1)\%*\%psh[1:4])})
 
 cnorm.dat$cmean3<-list(
-  Group1 = function(p) {cmean(gmu1[[1]](p[1:3]),gshape3[[1]](p[4:7]),0,14)},
-  Group2 = function(p) {cmean(gmu1[[2]](p[1:3]),gshape3[[2]](p[4:7]),0,14)},
-  Group3 = function(p) {cmean(gmu1[[3]](p[1:3]),gshape3[[3]](p[4:7]),0,14)})
+  Group1 = function(p) {cmean(cnorm.dat$gmu1[[1]](p[1:3]),cnorm.dat$gshape3[[1]](p[4:7]),0,14)},
+  Group2 = function(p) {cmean(cnorm.dat$gmu1[[2]](p[1:3]),cnorm.dat$gshape3[[2]](p[4:7]),0,14)},
+  Group3 = function(p) {cmean(cnorm.dat$gmu1[[3]](p[1:3]),cnorm.dat$gshape3[[3]](p[4:7]),0,14)})
 
 moc3<-
 moc(moc.dat[,1:4],density=cnorm1,groups=3,gmu=gmu1,gshape=gshape3,
@@ -305,14 +309,14 @@ cnorm.dat$ages<-cbind(1.7,3,4.2,5.6)
 # Last group is a linear function of time
 
 cnorm.dat$gmu1t<-list(
-  Group1 = function(pmu) {pmu[1]*ages^0},
-  Group2 = function(pmu) {pmu[2]+pmu[3]*ages},
-  Group3 = function(pmu) {pmu[4]*ages^0})
+  Group1 = function(pmu) {pmu[1]*cnorm.dat$ages^0},
+  Group2 = function(pmu) {pmu[2]+pmu[3]*cnorm.dat$ages},
+  Group3 = function(pmu) {pmu[4]*cnorm.dat$ages^0})
 
 cnorm.dat$cmean1t<-list(
-  Group1 = function(p) {cmean(gmu1t[[1]](p[1:4]),gshape1[[1]](p[5]),0,14)},
-  Group2 = function(p) {cmean(gmu1t[[2]](p[1:4]),gshape1[[2]](p[5]),0,14)},
-  Group3 = function(p) {cmean(gmu1t[[3]](p[1:4]),gshape1[[3]](p[5]),0,14)})
+  Group1 = function(p) {cmean(cnorm.dat$gmu1t[[1]](p[1:4]),cnorm.dat$gshape1[[1]](p[5]),0,14)},
+  Group2 = function(p) {cmean(cnorm.dat$gmu1t[[2]](p[1:4]),cnorm.dat$gshape1[[2]](p[5]),0,14)},
+  Group3 = function(p) {cmean(cnorm.dat$gmu1t[[3]](p[1:4]),cnorm.dat$gshape1[[3]](p[5]),0,14)})
 
 moc4<-
 moc(moc.dat[,1:4],density=cnorm1,groups=3,gmu=gmu1t,gshape=gshape1,
@@ -326,14 +330,14 @@ pgshape=c(moc1$coef[4]),pgmix=moc1$coef[5:6],data=cnorm.dat,gradtol=1E-4)
 zip<- function(x,la,shape=1,extra)
 { mix<- exp(extra)/(1+exp(extra))
   mix*(x == 0)+(1-mix)*dpois(x,la) }
+
 }
 
-ages<-cbind(1.7,3,4.2,5.6)
 
 gmup<-list(
-  Group1 = function(pmu) {exp(pmu[1]*ages^0)},
-  Group2 = function(pmu) {exp(pmu[2]+pmu[3]*ages)},
-  Group3 = function(pmu) {exp(pmu[4]*ages^0)})
+  Group1 = function(pmu) {exp(pmu[1]*cnorm.dat$ages^0)},
+  Group2 = function(pmu) {exp(pmu[2]+pmu[3]*cnorm.dat$ages)},
+  Group3 = function(pmu) {exp(pmu[4]*cnorm.dat$ages^0)})
 
 \dontrun{
 zipfit<-list(
@@ -350,6 +354,7 @@ moc5<-
 moc(moc.dat[,1:4],density=zip,groups=3,gmu=gmup,gextra=gextrap,
 expected = zipfit,pgmu=c(-0.6, 0.64,0, 1.6),pgextra=c(-3),
 pgmix=c(-0.7, -2), gradtol=1E-4)
+
 }
 
 # Standard Poisson with mixture depending on time independent
@@ -365,7 +370,7 @@ poiss<-function(x,la,...) {dpois(x,la)}
 
 moc6<-
 moc(moc.dat[,1:4],density=poiss,groups=3,gmu=gmup,gmixture=gmixt,
-pgmu=c(-0.6,0.64, 0, 1.6),pgmix=c(-0.2,-1, -1 ,-2),gradtol=1E-4)
+pgmu=c(-0.7,2.0, 0, 1.5),pgmix=c(-0.2,-1, -1 ,-2),gradtol=1E-4)
 
 print(moc6)
 
@@ -374,11 +379,12 @@ obsfit.moc(moc6,along=dumm)
 entropy(moc1,moc3,moc6)
 
 \dontrun{
-plot(moc6,against=ages,main="MOC profiles",xlab="age",ylab="Y")
+plot(moc6,against=cnorm.dat$ages,main="MOC profiles",xlab="age",ylab="Y")
 plot(residuals(moc6))
+
 }
 
-#More examples are available in the Examples directory of the library.
+#More extended examples are available in the Examples directory of the package.
 }
 \keyword{models}
 \keyword{nonlinear}

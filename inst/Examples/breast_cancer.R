@@ -5,8 +5,26 @@
 ## This example illustrates the use of mixture to estimate cure rate
 ## (survival) in the presence of competing risk.
 
-library(moc)
-bcs <- read.table("DataBank/breast_cancer.dat",header=TRUE)#replace to read data on your computer
+require(moc)
+
+#bcs <- read.table("DataBank/breast_cancer.dat",header=TRUE)#replace to read data on your computer
+bcs <-
+structure(list(
+delta = c(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+time = c(0.3, 12.2, 17.5, 28.2, 41, 78, 5, 12.3, 17.9, 29.1, 
+42, 80, 5.6, 13.5, 19.8, 30, 44, 84, 6.2, 14.4, 20.4, 31, 46, 
+87, 6.3, 14.4, 20.9, 31, 48, 89, 6.6, 14.8, 21, 32, 48, 90, 6.8, 
+15.7, 21, 35, 51, 97, 7.5, 16.2, 21.1, 35, 51, 98, 8.4, 16.3, 
+23, 38, 52, 100, 8.4, 16.5, 23.6, 39, 54, 114, 10.3, 16.8, 24, 
+40, 56, 126, 11, 17.2, 24, 40, 60, 131, 11.8, 17.3, 27.9, 41, 
+78, 174, 0.3, 110, 4, 111, 7.4, 112, 15.5, 112, 23.4, 162, 46, 
+46, 51, 65, 68, 83, 88, 96, 111, 136, 112, 141, 113, 143, 114, 
+167, 114, 177, 117, 179, 121, 189, 123, 201, 129, 203, 131, 203, 
+133, 213, 134, 228, 134)), 
+.Names = c("delta", "time"), class = "data.frame", row.names = c(NA, -121L))
 
 ## We first try to estimate the model of McLachlan & Peel using formula (10.9) p. 271. 
 ## In fact we use the following identity for the log-likelihood in formula (10.9)

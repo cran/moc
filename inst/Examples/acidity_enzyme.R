@@ -1,14 +1,15 @@
 ## The following examples use the acidity and enzyme
 ## data available at
-#  http://www.maths.uq.edu.au/~gjm/DATA/mmdata.html
+##  http://www.maths.uq.edu.au/~gjm/DATA/mmdata.html
 ## They were used to illustrate bootstrapping of mixture models in
 ## McLachlan & Peel (2000) pp. 194-196.
 
 
 ## First we load the required libraries
+## (we also use the boot library for bootstrapping)
 
-library(moc)
-library(boot)
+require(moc)
+require(boot)
 
 ## Then, we set the required density, gmu and gshape function 
 ## for a mixture of normals within MOC.
@@ -34,7 +35,12 @@ G4 = function (p) {rbind(exp(p[4]))}
 ## Acidity index in a sample of 155 lakes in north-central Wisconsin.
 # (These data are available at  http://www.maths.uq.edu.au/~gjm/DATA/mmdata.html)
 
-acidity <- scan(file="DataBank/acidity.dat",skip=6)#replace with your own command to read the data on your computer
+	# If you have an internet connection
+        # acidity <- scan(file="http://www.stats.bris.ac.uk/~peter/mixdata",skip=50,nmax=155)
+
+acidity.file <- system.file("Examples","acidity.RData",package="moc",mustWork=TRUE)
+load(acidity.file)
+
 
 acd1 <-  moc(acidity,density=normal,groups=1,gmu=norm.mu[1],gshape=norm.sig[1],pgmu=c(5),pgshape=c(0.04))
 acd2 <-  moc(acidity,density=normal,groups=2,gmu=norm.mu[1:2],gshape=norm.sig[1:2],pgmu=c(4,6),
@@ -91,7 +97,6 @@ hist(acidity,breaks=30,prob=TRUE,add=TRUE)
 ## In fact bootstrapping mixture models can be misleading since it completely ignores
 ## the dependence on starting values, the existence of local maxima's and other properties
 ## that would normally be assessed with a single data set.
-
 
 ## First we construct a function that will fit 2 MOC models: one with g groups, the other
 ## with g+1 groups and then return the LRTS.
@@ -150,7 +155,12 @@ acidity.boot3 <- boot(acidity, sim="parametric",boot.normloglike.moc,
 ## in the blood of 245 unrelated individuals.
 ## It is available at  http://www.maths.uq.edu.au/~gjm
 
-enzyme <- scan("DataBank/enzyme.dat",skip=10)#replace with your own command to read the data on your computer
+
+	# If you have an internet connection
+        # enzyme <- scan(file="http://www.stats.bris.ac.uk/~peter/mixdata",skip=18,nmax=245)
+
+enzyme.file <- system.file("Examples","enzyme.RData",package="moc",mustWork=TRUE)
+load(enzyme.file)
 
 enzy1 <-  moc(enzyme,density=normal,groups=1,gmu=norm.mu[1],gshape=norm.sig[1],pgmu=c(5),pgshape=c(0.04))
 enzy2 <-  moc(enzyme,density=normal,groups=2,gmu=norm.mu[1:2],gshape=norm.sig[1:2],

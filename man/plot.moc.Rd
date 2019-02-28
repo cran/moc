@@ -32,7 +32,7 @@
 
 \usage{
 
-\method{plot}{moc}(x, against = 1:x$nvar,main = paste(substitute(x)),
+\method{plot}{moc}(x, against = 1:x$nvar,main = "",
      xlab = "", ylab = "", prob.legend = TRUE, scale = FALSE,
      group.colors = rainbow(x$groups), \dots)
 
@@ -103,7 +103,7 @@ entropyplot(x, \dots)
 
   \code{plot.residuals.moc} invisibly returns the plotted residual values.}
 
-\author{Bernard Boulerice <\email{Bernard.Boulerice@sympatico.ca}>}
+\author{Bernard Boulerice <\email{bernard.boulerice.bb@gmail.com}>}
 
 \seealso{\code{\link{moc}}, \code{\link{residuals.moc}}, \code{\link{print.moc}},
   \code{\link{AIC.moc}}}

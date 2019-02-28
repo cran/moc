@@ -18,6 +18,6 @@
 }
 
 
-\author{Bernard Boulerice <\email{Bernard.Boulerice@sympatico.ca}>}
+\author{Bernard Boulerice <\email{bernard.boulerice.bb@gmail.com}>}
 
 \keyword{datasets}

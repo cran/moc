@@ -5,8 +5,10 @@
 ## in the examples of BUGS software and also in many R packages:
 ## faraway (epilepsy), geepack (seizure), GLMMGibbs (epil.bugs), MASS (epil).
 
-library(moc)    #load the essential
-data(epil,package="MASS")
+require(moc)    #load the essential
+epil.file <- system.file("Examples","epil.RData",package="moc",mustWork=TRUE)
+load(epil.file)
+                                        #data(epil,package="MASS")
 
 ## The data are organized on a time basis (one row for each clinic visit),
 ## we first reorganize the data on a subject basis.
@@ -64,10 +66,12 @@ AIC(epil.1,epil.2,epil.3,epil.4,k="BIC")
 ## by other authors which as we can see doesn't appear to be maximum likelihood. 
 ## Profiling the likelihood help us find a better solution.
 
+if(interactive()) {
+if(menu(c("YES","NO"),title="\nProceed with time consuming profiling?")==1){
 epil.3.profile <- try(confint(epil.3,profiling="complete",iterlim=50)) 
                   #Profiling the likelihood is computer intensive
                   #(about 10 min. on a fast computer).
-
+}}
 ## The preceding torture found about 19 better solutions (with respect to the likelihood)
 ## than the one previously found. The best solution
 ## (found in the profiling of the trt*lbase interaction parameter) being:

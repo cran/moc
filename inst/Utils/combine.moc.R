@@ -1,7 +1,12 @@
-                                        #(C) 2002-2008 Bernard Boulerice
-                                        #March  2003
-                                       
+   # Copyright (C) 2002-2019 Bernard Boulerice
 
+require(moc)
+
+## This file contains the following functions:
+##    find.unique.pattern
+##    combine.density
+##    combine.parfun
+##    combine.prob
 
 # The function combine.density combines two densities for two data sets
 # to be used in a joint MOC analysis. The function returns a function that
@@ -14,6 +19,13 @@
 # specified with is.joint1 and is.joint2. If you want to combine more
 # than two data sets you can use the function recursively.
 
+## For example if you have 2 fitted moc objects (moc1,moc2): you can use
+## density.combined <- combine.density(moc1$call$density,moc2$call$density,
+## moc1$nvar, moc2$nvar,is.joint1=moc1$joint,is.joint2=moc2$joint)
+## BE CAREFULL HOWEVER that moc{1,2}$call$density are in fact names,
+## you can have big probelms when this is not the case.
+## Also when moc have been called with a data argument, the density names
+## needs that data frame to be resolved.
 
 "combine.density" <-
 function(dname1,dname2,nvar1,nvar2,is.joint1=FALSE,is.joint2=FALSE)
@@ -36,11 +48,12 @@ eval(parse(text=fbody),envir=.GlobalEnv)
 }
 
 
-# The function combine.parfun can be used to combine the parameter functions for MOC
-# (gmu, gshape and gextra) for two data sets, it returns a function that must be assigned.
+# The function combine.parfun can be used to combine the parameter
+# functions for MOC (gmu, gshape and gextra) for two data sets,
+# it returns a function that must be assigned.
 #
-# The function names fname1 and fname2 must be supplied quoted, one of the function name
-# can be the empty string "" but not both.
+# The function names fname1 and fname2 must be supplied quoted,
+# one of the function name can be the empty string "" but not both.
 #
 # You must supply the parameter indexes of each function in np1 and np2,
 # the returned number of rows in n (both function should return the same number of rows)
@@ -49,7 +62,14 @@ eval(parse(text=fbody),envir=.GlobalEnv)
 #
 # The set parameter must be a two columns matrix that specifies which groups of the
 # first data set should be combined with which groups of the second data set,
-# by default it assumes that a full cross-classification of the groups is required.
+# by default it assumes that a full cross-classification of the groups is requested.
+# A subset can be specified with commands like merge(1:3,1:4)[c(2,3,6,8,11,12),]
+
+## For example you can combine the gmu function of 2 fitted moc objects (moc1,moc1) with:
+## gmu.combined <- combine.parfun(moc1$call$gmu,moc2$call$gmu,
+##                 np1=1:moc1$npar[1],np2=1:moc2$npar[1],
+##                 n=unique(c(moc1$nsubject,moc2$nsubject)),
+##                 ng1=moc1$groups,ng2=moc2$groups,set=merge(1:ng1,1:ng2))
 
 "combine.parfun" <-
 function(fname1,fname2,np1,np2,nvar1,nvar2,n,ng1,ng2,set=merge(1:ng1,1:ng2))
@@ -113,9 +133,9 @@ f.list
 }
 
 
-# The function combine.prob combines the mixture probability 
-# for two moc models. This function is useful to compute starting values for
-# the full joint model.
+## The function combine.prob combines the mixture probability 
+## for two moc models. This function is useful to compute starting values for
+## the full joint model. For example glogit(combine.prob(moc1,moc2))
 
 "combine.prob" <-
   function(moc1,moc2)
@@ -130,12 +150,14 @@ f.list
     list(CrossTab=crossprob,logit=mix.logit)
   }
 
-# The following function find unique patterns in the data X
-# and returns a matrix with those pattern and a column of total weight
+## The following function find unique patterns in the data X
+## and returns a matrix with those pattern and a column of total weight
+## The resulting pattern can be used as the response for a moc model
+## with the weights as the wt argument in moc.
 
 find.unique.pattern<-function(X,w=rep(1,dim(X)[1]))
 {
-  if(dim(X)[1]!=dim(as.matrix(w))[1]) stop("X and w must have the number of rows")
+  if(dim(X)[1]!=dim(as.matrix(w))[1]) stop("X and w must have the same number of rows")
   sx<-apply(X, 1, paste, collapse = " ")
   sxu<-unique(sx)
   nrow<-length(sxu)

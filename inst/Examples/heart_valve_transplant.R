@@ -16,12 +16,43 @@
 ## (available at http://www.jstatsoft.org/v02/i07)
 ## used to illustrate their program (also at http://www.jstatsoft.org/v02/i07)
 
+# If you already have the data heart <- read.table("DataBank/heart_extended.dat",header=TRUE)  
+					#change to suit your data location and format
 
-heart <- read.table("DataBank/heart_extended.dat",header=TRUE)  #change to suit your data location and format
+heart <- structure(list(id = 1:103, 
+status = c(0, 0, 1, 1, 0, 0, 2, 0, 0, 2, 1, 0, 2, 2, 0, 2, 0, 1, 0, 2, 2, 2, 
+2, 2, 0, -1, 0, 1, 0, 2, 0, 2, 0, 0, 0, 2, 2, 1, 0, 0, 0, 0, 0, 0, 1, 2, 2, 0, 0, 0, 2, 0, 0, 
+0, 2, 0, 0, 2, 0, 2, 0, 0, 0, 1, 2, 0, 1, 2, 0, 2, 0, 0, 2, 1, 0, 0, 0, 0, 2, 0, 0, -1, 1, 2, 
+0, 0, 2, 0, 2, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, -1, -1, 0), 
+ftime = c(NA, NA, 15, 3, NA, NA, 624, NA, NA, 46, 127, NA, 64, 1350, NA, 280, NA, 23, NA, 10, 1024, 
+39, 730, 136, 1775, NA, NA, 1, NA, 836, NA, 60, 1536, 1549, NA, 54, 47, 0, 51, 1367, 1264, NA, NA, NA, 44, 
+994, 51, NA, 1106, 897, 253, NA, 147, NA, 51, 875, NA, 322, 838, 65, NA, NA, 815, 551, 66, NA, 228, 65, 660, 
+25, 589, 592, 63, 12, NA, 499, NA, 305, 29, 456, 439, NA, 48, 297, NA, 389, 50, 339, 68, 26, NA, 30, 237, 
+161, 14, 167, 110, 13, NA, 1, NA, NA, NA), 
+age = c(NA, NA, 19832, 14741, NA, NA, 18630, NA, NA, 15535, 17550, NA, 
+19949, 19764, NA, 18088, NA, 20783, NA, 20208, 15838, 15638, 
+21317, 19002, 12159, NA, NA, 19802, NA, 16419, NA, 23541, 
+17912, 14834, NA, 17915, 22481, 15151, 18453, 17748, 16604, 
+NA, NA, NA, 13216, 17756, 17223, NA, 13423, 16842, 17831, 
+NA, 17332, NA, 19168, 14217, NA, 17558, 15192, 17919, NA, 
+NA, 11955, 17862, 18746, NA, 7197, 16526, 17537, 19363, 
+17346, 9765, 20601, 10657, NA, 19069, NA, 17998, 19710, 
+16989, 19324, NA, 19502, 15639, NA, 17875, 16953, 19886, 
+18783, 19164, NA, 16739, 17468, 16016, 14714, 9746, 8646, 10552, NA, 12843, NA, NA, NA), 
+mismat = c(NA, NA, 1.11, 1.66, NA, NA, 1.32, NA, NA, 0.61, 0.36, NA, 1.89, 0.87, NA, 1.12, NA, 
+2.05, NA, 2.76, 1.13, 1.38, 0.96, 1.62, 1.06, NA, NA, 0.47, NA, 
+1.58, NA, 0.69, 0.91, 0.38, NA, 2.09, 0.87, 0.87, NA, 0.75, 0.98, 
+NA, NA, NA, 0, 0.81, 1.38, NA, 1.35, NA, 1.08, NA, NA, NA, 1.51, 
+0.98, NA, 1.82, 0.19, 0.66, NA, NA, 1.93, 0.12, 1.12, NA, 1.02, 
+1.68, 1.2, 1.68, 0.97, 1.46, 2.16, 0.61, NA, 1.7, NA, 0.81, 1.08, 
+1.41, 1.94, NA, 3.05, 0.6, NA, 1.44, 2.25, 0.68, 1.33, 0.82, 
+NA, 0.16, 0.33, 1.2, NA, 0.46, 1.78, 0.77, NA, 0.67, NA, NA, NA)), 
+.Names = c("id", "status", "ftime", "age", "mismat"), class = "data.frame", row.names = c(NA, -103))
+
 heart2 <- na.omit(heart)   #not necessary in moc but that's what McLachlan et al. did
 heart2 <- transform(heart2,age.std=scale(age),mismat.std=scale(mismat))
 
-library(moc)    #load the essential
+require(moc)    #load the essential
 
 ## See breast_cancer.R for more coding details about Gompertz distribution.
 

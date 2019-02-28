@@ -1,7 +1,8 @@
 #include <R.h>
 #include <Rdefines.h>
+#include <R_ext/Rdynload.h>
 
-     void mixloglike(double *jdens, double *pmix, double *wt, int *nobs, int *ng,double *mll)
+void mixloglike(double *jdens, double *pmix, double *wt, int *nobs, int *ng,double *mll)
      {
        int i, j;
        double pmll;
@@ -18,7 +19,7 @@
        }
      }
 
-void jointlike(double *mdens,int *nobs, int *nvar, double *jll)
+void cjointlike(double *mdens,int *nobs, int *nvar, double *jll)
 {
 	int i,j;
         for(j = 0; j < *nobs; j++)
@@ -47,3 +48,16 @@ void mixpost(double *jdens, double *pmix, double *wt, int *nobs, int *ng,double 
 	}
 }
 
+static const R_CMethodDef cMethods[] = {
+  {"mixloglike", (DL_FUNC) &mixloglike, 6},
+  {"cjointlike",  (DL_FUNC) &cjointlike,  4},
+  {"mixpost",    (DL_FUNC) &mixpost,    6},
+  {NULL, NULL, 0}
+};
+
+void R_init_moc(DllInfo *dll)
+{
+  R_registerRoutines(dll, cMethods, NULL, NULL, NULL);
+  R_useDynamicSymbols(dll, FALSE);
+  /*    R_forceSymbols(dll, TRUE);*/
+}

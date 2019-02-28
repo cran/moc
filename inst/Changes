@@ -1,3 +1,33 @@
+Changes in MOC 2.0
+==================
+   Many changes in the core of the code to make it faster and more efficient.
+   Added many new utilities.
+   
+
+Changes in MOC 1.0-7 to 1.5-1
+=============================
+   Added a faster new version of mvnorn in Utils.
+   Essentially changes to accomodate changes in R itself.
+   Some corrections to minor BUGS.
+
+
+Changes in MOC 1.0-6
+====================
+   GUI/moc-gui.R::moc.gui() : modified help system to accomodate new file
+   internal saving system in R.
+
+Bugs Fixes:
+-----------
+
+   moc.gui() from GUI/moc-gui.R can now start when there is no moc object already
+   available in the environment (intentional limitation : FALSE Bugs). Added a
+   [none] dummy object.
+
+   Removed multioctets characters in Utils/rasch.R on line 164 which became a bug
+   (I hate this game with character coding)
+
+
+
 Changes in MOC 1.0-5
 ====================
 

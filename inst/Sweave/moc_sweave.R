@@ -1,4 +1,4 @@
-#  Copyright (C) 2002-2008 Bernard Boulerice
+#  Copyright (C) 2002-2019 Bernard Boulerice
 #  Sweave utilities for Mixture of Curves
 
 #  This file is not loaded with the library moc, it has to be sourced separately.

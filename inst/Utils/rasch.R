@@ -1,7 +1,9 @@
 ## author: Bernard Boulerice
 ## functions to construct item response theory models
 ## with MOC version 0.8 and higher.
-## Copyright (C) 2002-2008 Bernard Boulerice
+## Copyright (C) 2002-2019 Bernard Boulerice
+
+require(moc)
 
 # gherm.quad gives the nodes and weights of a quadrature to
 # approximate a normal integral (Hermite quadrature).
@@ -161,7 +163,7 @@ moc.rasch<-function(rasch.data=list(resp.item=NULL,rasch=rasch.norm,herm=gherm.q
     if (!all(sapply(1:dim((rasch.data$resp.item))[2],function(i)
                    all(rasch.data$resp.item[,i]%in%c(1:rep(rasch.data$nlev,rasch.data$ntimes)[i],NA))))){
     stop(paste("Column",i,"of resp.item should contain only the numbers 1 to",
-               rep(rasch.data$nlev,rasch.data$ntimes)[i],"or «NA»."))}
+               rep(rasch.data$nlev,rasch.data$ntimes)[i],"or NA."))}
     rasch.gmu<-lapply(1:rasch.data$ngroups,function(i)
                       eval(parse(text=paste("function(p) rasch.gmu.group(p,",i,")"))))
     names(rasch.gmu)<-paste("Group",1:rasch.data$ngroups,sep="")

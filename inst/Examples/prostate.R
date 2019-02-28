@@ -16,12 +16,37 @@
 ## removed all subjects with missing values, which is highly questionable,
 ## here we are going to use all subjects.
 
-prostate <- read.table("DataBank/prostate.dat",header=TRUE)  #read your data here and make
-                                                             #the appropriate coding
 
+#If you have an internet connection
+#prostate <- read.table(file="http://lib.stat.cmu.edu/datasets/Andrews/T46.1",
+#col.names=c("T46","One","id1","id2","stage", "rx", "u2", "u3", "u4", "dtime", "status", 
+#	"age", "wti", "pf", "hx", "sbp", "dbp", "ekg", "hg", "sz", "sg", "ap", "bm"),
+#na.strings=c("-9999",""),
+#colClasses=c(rep("NULL",4),"numeric","factor",rep("numeric",4),"factor",rep("numeric",2),rep("factor",2),
+#	rep("numeric",2),"factor",rep("numeric",4),"factor"))
+#
+#levels(prostate$rx) <- c("placebo","0.2 mg estrogen","1.0 mg estrogen","5.0 mg estrogen")
+#
+#levels(prostate$status) <- c("alive","dead - prostatic cancer","dead - heart or vascular",
+#	"dead - cerebrovascular","dead - pulmonary embolus","dead - other cancer",
+#	"dead - respiratory disease","dead - other non-cancer","dead - unspecified non-cancer","dead - unknown cause")
+#
+#levels(prostate$pf) <- c("normal activity","in bed < 50% daytime","in bed > 50% daytime","confined to bed")
+#
+#levels(prostate$hx) <- c("no","yes")
+#
+#levels(prostate$ekg) <- c("normal","benign", "rhythmic disturb & electrolyte ch",
+#	"heart block or conduction def","heart strain",
+#	"old MI","old MI")
+#
+#levels(prostate$bm) <- c("no","yes",NA)
+#
+
+prostate.file <- system.file("Examples","prostate.RData",package="moc",mustWork=TRUE)
+load(prostate.file)
 prostate <- transform(prostate,cons=1,log.ap=log(ap),sqrt.sz=sqrt(sz)) 
 
-library(moc)    #load the essential
+require(moc)    #load the essential
 
 ## We need the multinomial distribution for categorical variables
 
@@ -57,7 +82,7 @@ mvnorm <- function(x,mu,sigma,extra)
   for ( i in 1:dim(x)[1]) {
       ss[lind] <- extra[i,]
       na.ind <- is.na(y[i,])
-      y[i,!na.ind]] <- t(ss)[!na.ind,!na.ind]%*%y[i,!na.ind]
+      y[i,!na.ind] <- t(ss)[!na.ind,!na.ind]%*%y[i,!na.ind]
   }
   apply(dnorm(y)/sigma,1,prod,na.rm=TRUE)
 }
@@ -186,6 +211,8 @@ multiextra.2 <-  list(G1 = function (p) { rbind(p[1:3]) },
 ## p[2], p[5] are for the correlation between wti and hg in their respective group,
 ## while p[3] and p[4] stands for the mean differences of wti and hg between the two
 ## categories of bm in each mixture group.
+
+## Be aware that this last model can take a while to estimate!
 
 moc.prost.2.3 <- moc(cbind(prostate$pf.ind, prostate$hx.ind,prostate$ekg.ind,prostate$bm.ind,
                  as.matrix(prostate[,c("age", "wti", "sbp", "dbp", "hg", "sg","sqrt.sz","log.ap")])),

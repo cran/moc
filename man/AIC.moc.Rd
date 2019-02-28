@@ -118,7 +118,7 @@ loglike.moc(object, parm = object$coef, evaluate = FALSE)
   Transaction on Pattern Analysis and Machine Learning, \bold{22}, pp. 719--725.
 }
 
-\author{Bernard Boulerice <\email{Bernard.Boulerice@sympatico.ca}>}
+\author{Bernard Boulerice <\email{bernard.boulerice.bb@gmail.com}>}
 
 \seealso{\code{\link{moc}}, \code{\link{confint.moc}}, \code{\link{profiles.postCI}},
  \code{\link{entropyplot.moc}}, \code{\link{npmle.gradient}}}
